@@ -12,9 +12,9 @@ https://pub.dev/packages/permission_handler
 
 ## About packages that failed to work with the bluetooth printer in 2024
 
-esc_pos_bluetooth
-bluetooth_print
-flutter_bluetooth_printer
+  esc_pos_bluetooth
+  bluetooth_print
+  flutter_bluetooth_printer
 
 ## About UI standards
 

@@ -9,8 +9,8 @@ import '../widgets/simple_white_box.dart';
 import '../widgets/button.dart';
 import '../widgets/div.dart';
 import '../widgets/p.dart';
-import 'boleta.dart';
-import 'factura.dart';
+import 'comprobantes/boleta.dart';
+import 'comprobantes/factura.dart';
 
 class TotalAPagar extends StatefulWidget {
   final Map datos;

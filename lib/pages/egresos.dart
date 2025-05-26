@@ -14,7 +14,7 @@ import '../widgets/input.dart';
 import '../widgets/div.dart';
 import '../widgets/p.dart';
 import 'selecciona_rango_de_fechas.dart';
-import 'pre_impresion_egresos.dart';
+import 'imprimir/pre_impresion_egresos.dart';
 
 class Egresos extends StatefulWidget {
   const Egresos({super.key});

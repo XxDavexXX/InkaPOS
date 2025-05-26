@@ -9,15 +9,15 @@ import '../widgets/svg.dart';
 import '../widgets/dialog_title.dart';
 import '../widgets/default_background.dart';
 import '../widgets/p.dart';
-import 'crear_pedido.dart';
-import 'reportes.dart';
+import 'pedidos/crear_pedido.dart';
+import 'reportes/reportes.dart';
 import 'login.dart';
 import 'abrir_turno.dart';
 import 'maestros.dart';
 import 'cierre_de_turno.dart';
 import 'configuracion_de_caja.dart';
 import 'configuracion_de_negocio.dart';
-import 'test_impresoras.dart';
+import 'imprimir/test_impresoras.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});

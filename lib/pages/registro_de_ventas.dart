@@ -9,7 +9,7 @@ import '../widgets/my_icon.dart';
 import '../widgets/option.dart';
 import '../widgets/input.dart';
 import '../widgets/p.dart';
-import 'pre_impresion_registros.dart';
+import 'imprimir/pre_impresion_registros.dart';
 import 'selecciona_rango_de_fechas.dart';
 
 class RegistroDeVentas extends StatefulWidget {

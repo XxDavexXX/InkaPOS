@@ -50,9 +50,9 @@ class PrintableDocBoleta extends StatelessWidget {
   @override
   Widget build(BuildContext context){
     return Div(
-      width: 320,
-      background: Colors.white,
-      padding: const EdgeInsets.all(16),
+      width: 320,   
+      background: const Color.fromARGB(255, 255, 255, 255),
+      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

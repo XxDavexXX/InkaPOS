@@ -9,8 +9,8 @@ import '../widgets/my_icon.dart';
 import '../widgets/bottom_button.dart';
 import '../widgets/div.dart';
 import '../widgets/p.dart';
-import 'imprimir_cierre_de_turno.dart';
-import 'imprimir_cierre_de_turno_z.dart';
+import 'imprimir/imprimir_cierre_de_turno.dart';
+import 'imprimir/imprimir_cierre_de_turno_z.dart';
 
 class CierreDeTurno extends StatefulWidget {
   const CierreDeTurno({super.key});

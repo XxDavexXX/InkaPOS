@@ -4,16 +4,16 @@ import '../widgets/default_background.dart';
 import '../widgets/my_icon.dart';
 import '../widgets/div.dart';
 import '../widgets/p.dart';
-import 'grupos.dart';
-import 'subgrupos.dart';
+import 'grupos/grupos.dart';
+import 'grupos/subgrupos.dart';
 import 'productos.dart';
-import 'usuarios.dart';
-import 'areas.dart';
-import 'impresoras.dart';
+import 'usuarios/usuarios.dart';
+import 'areas/areas.dart';
+import 'imprimir/impresoras.dart';
 import 'stock.dart';
-import 'metodos_de_pago.dart';
-import 'clientes.dart';
-import 'observaciones.dart';
+import 'metodos_pago/metodos_de_pago.dart';
+import 'clientes/clientes.dart';
+import 'observaciones/observaciones.dart';
 import 'egresos.dart';
 
 class Maestros extends StatelessWidget {
