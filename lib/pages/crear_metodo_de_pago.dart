@@ -26,7 +26,8 @@ class _CrearMetodoDePagoState extends State<CrearMetodoDePago> {
 
   String _tipo = 'electrónico';
   void _editTipo()async{
-    final List<String> tipos = ['electrónico','tarjeta','efectivo'];
+    // final List<String> tipos = ['electrónico','tarjeta','efectivo'];
+    final List<String> tipos = ['tarjeta','efectivo', 'yape', 'plin'];
     int? index = await choose(context,tipos,text:'Tipo:');
     if(index==null)return;
     setState(()=>_tipo=tipos[index!]);

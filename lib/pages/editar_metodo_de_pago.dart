@@ -38,7 +38,8 @@ class _EditarMetodoDePagoState extends State<EditarMetodoDePago> {
     setState(()=>widget.method['nombre']=val.trim());
   });
   void _editTipo()=>loadThis(context,()async{
-    final List<String> tipos = ['electrónico','tarjeta','efectivo'];
+    // final List<String> tipos = ['electrónico','tarjeta','efectivo'];
+    final List<String> tipos = ['tarjeta','yape', 'plin'];
     int? index = await choose(context,tipos,text:'Tipo:');
     if(index==null)return;
     setState(()=>widget.method['tipo']=tipos[index!]);
