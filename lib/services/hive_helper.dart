@@ -16,6 +16,8 @@ Box observaciones = Hive.box<Map>('Observaciones');
 Box subgrupos = Hive.box<Map>('Subgrupos');
 Box areas = Hive.box<Map>('Areas');
 Box egresos = Hive.box<Map>('Egresos');
+Box correlativos = Hive.box<Map>('Correlativos');
+
 
 //Usuario logueado
 Map? getUser()=>setts.get('user');
@@ -34,6 +36,7 @@ Future cerrarTurnoActual()async{
 	await addTurno(currentTurn);
 	await setts.delete('turnoActual');
 }
+
 
 //Turnos
 // {id: String (millisecondsSinceEpoch), precioDeCompra: double, precioDeVenta: double, fondoInicialSoles: double, fondoInicialDolares: double, usuario: int (user ID)}
@@ -67,6 +70,43 @@ Future<int> addCartItem(Map newOne)async{
 Future setCartItem(Map newOne)async=>await cart.put(newOne['id'],newOne);
 Future deleteCartItem(int id)async=>await cart.delete(id);
 Future deleteAllCartItem()async=>await cart.clear();
+ 
+String getSerieActiva() {
+  // Deberías traer esto desde Hive o un helper donde almacenas las impresoras activas
+  // Aquí es simulado:
+  List<Map> impresoras = [
+    {'nombre': 'IPCAJA', 'nroDeSerie': '001', 'active': true},
+    {'nombre': 'IPCAJA 2', 'nroDeSerie': '002', 'active': false},
+  ];
+
+  final activa = impresoras.firstWhere((p) => p['active'] == true, orElse: () => {'nroDeSerie': '001'});
+  return activa['nroDeSerie'] ?? '001';
+}
+
+
+Future<String> generarNumeroDeComprobantePorCaja({
+  required String tipo, // 'boleta' o 'factura'
+  required String serie, // 'B001', 'F002', etc.
+}) async {
+  final key = '$tipo-$serie'; // Ejemplo: 'boleta-B001'
+  Map? actual = correlativos.get(key);
+
+  int ultimo = 0;
+  if (actual != null && actual.containsKey('correlativo')) {
+    ultimo = actual['correlativo'];
+  }
+
+  final nuevo = ultimo + 1;
+
+  // Guardar el nuevo correlativo
+  await correlativos.put(key, {
+    'correlativo': nuevo,
+    'updatedAt': DateTime.now().millisecondsSinceEpoch,
+  });
+
+  final correlativoStr = nuevo.toString().padLeft(8, '0');
+  return '$serie-$correlativoStr';
+}
 
 /* Products
 id: int,

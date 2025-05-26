@@ -136,6 +136,16 @@ class _TotalAPagarState extends State<TotalAPagar> {
         return map;
       }).toList(),
     };
+
+    final serieCaja = getSerieActiva(); // función definida abajo
+    final serie = datos['tipo'] == 'boleta' ? 'B$serieCaja' : 'F$serieCaja';
+
+    datos['numeroDeComprobante'] = await generarNumeroDeComprobantePorCaja(
+      tipo: datos['tipo'],
+      serie: serie,
+    );
+    datos['nroDeSerie'] = serieCaja; // lo puedes guardar por auditoría
+
     //Guardar el pedido en registros de ventas
     await loadThis(context,()async{
       await addRegistroDeVenta(datos);

@@ -65,7 +65,9 @@ class PrintableDocBoleta extends StatelessWidget {
           Te('RUC: '+reg['datosDelNegocio']['ruc']),
           sep,
           Te('BOLETA DE VENTA ELECTRÓNICA',bold:true),
-          Te(reg['id']),
+          // Te(reg['id']),
+          Te(reg['numeroDeComprobante'] ?? '00000000'),
+
           sep,
           Row(
             children: [

@@ -30,6 +30,7 @@ void main() async {
   await Hive.openBox<Map>('Observaciones');
   await Hive.openBox<Map>('Areas');
   await Hive.openBox<Map>('Egresos');
+  await Hive.openBox<Map>('Correlativos');
   // Agregar algunos valores iniciales en la base de datos
   bool appJustInstalled = Hive.box('settings').get('appJustInstalled')==null;
   //Si no hay usuarios, crear el usuario admin por defecto
