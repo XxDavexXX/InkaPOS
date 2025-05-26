@@ -1,0 +1,40 @@
+name: inkapos
+description: "Inkapos app"
+publish_to: 'none'
+version: 1.0.0+1
+environment:
+  sdk: ^3.7.2
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.3.0
+  url_launcher: ^6.3.1
+  share_plus: ^11.0.0
+  path_provider: ^2.1.5
+  hive: ^2.2.3
+  widgets_to_image: ^1.0.0
+  permission_handler: ^12.0.0+1
+  print_bluetooth_thermal: ^1.1.6
+  esc_pos_utils_plus: ^2.0.4
+  image: ^4.5.4
+  flutter_svg: ^2.1.0
+  qr_flutter: ^4.1.0
+dev_dependencies:
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+flutter_launcher_icons:
+  android: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/logo.png"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/logo.png"
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+  fonts:
+    - family: Gotham
+      fonts:
+        - asset: assets/GothamMedium.ttf

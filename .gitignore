@@ -1,0 +1,64 @@
+# ----------------------
+# Flutter/Dart Defaults
+# ----------------------
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# ----------------------
+# Android/Gradle
+# ----------------------
+**/intermediates/
+**/outputs/
+android/.gradle/
+android/local.properties
+*.apk
+*.aar
+*.so
+*.a
+*.bin
+*.dill
+
+# ----------------------
+# iOS/Xcode
+# ----------------------
+ios/Flutter/.last_build_id
+*.ipa
+*.xcworkspace
+*.xcuserstate
+*.xcuserdatad
+*.xcodeproj/project.xcworkspace/
+
+# ----------------------
+# IDE/Editor Files
+# ----------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# ----------------------
+# Logs, backups & others
+# ----------------------
+*.log
+*.tmp
+*.lock
+*.orig
+*.swp
+.DS_Store
+
+# ----------------------
+# Firebase / API keys
+# ----------------------
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# ----------------------
+# Documentation outputs
+# ----------------------
+**/doc/api/
