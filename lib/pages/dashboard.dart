@@ -180,6 +180,7 @@ class _DashboardState extends State<Dashboard> {
 		List<String> opts=[
 			'Limpiar carrito',
 			'Eliminar registros de venta',
+      'Limpiar correlativos',
 		];
 		int? opt=await choose(context,opts);
 		if(opt==null)return;
@@ -198,6 +199,13 @@ class _DashboardState extends State<Dashboard> {
 					await alert(context,'Done');
 				});
 			})();break;
+      case 'Limpiar correlativos': (() async {
+        if ((await confirm(context, '¿Deseas reiniciar todos los correlativos a cero?')) != true) return;
+        await loadThis(context, () async {
+          await resetCorrelativos();
+          await alert(context, 'Correlativos reiniciados a cero');
+        });
+      })();break;
 		}
 	}
 

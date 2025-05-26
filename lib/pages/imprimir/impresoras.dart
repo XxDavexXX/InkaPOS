@@ -24,6 +24,7 @@ class _ImpresorasState extends State<Impresoras> {
     WidgetsBinding.instance.addPostFrameCallback((_)async{
       doLoad(context);
       try{
+        
       	//TODO: Fetch real data
         setState((){
           _printers = [

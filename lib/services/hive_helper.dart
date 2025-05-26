@@ -108,6 +108,17 @@ Future<String> generarNumeroDeComprobantePorCaja({
   return '$serie-$correlativoStr';
 }
 
+
+Future<void> resetCorrelativos() async {
+  final keys = correlativos.keys.toList();
+  for (var key in keys) {
+    await correlativos.put(key, {
+      'correlativo': 0,
+      'updatedAt': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+}
+
 /* Products
 id: int,
 nombre: String,
