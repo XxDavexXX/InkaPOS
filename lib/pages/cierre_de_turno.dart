@@ -75,18 +75,26 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
         double ventasTarjetasDolares = 0.0;
         double ventasElectronicosSoles = 0.0;
         double ventasElectronicosDolares = 0.0;
+        double ventasYapesSoles = 0.0;
+        double ventasPlinsSoles = 0.0;
+        double ventasYapesDolares = 0.0;
+        double ventasPlinsDolares = 0.0;
         registros.forEach((Map reg){
           reg['metodosDePago'].forEach((mp){
             // Metodo e.g. {abreviatura:'S/',nombre:'Soles',tipo:'efectivo',divisa:'soles',monto:10.0},
             if(mp['divisa']=='PEN'){
               if(mp['tipo']=='efectivo')ventasEfectivoSoles+=mp['monto'];
               if(mp['tipo']=='tarjeta')ventasTarjetasSoles+=mp['monto'];
-              if(mp['tipo']=='electrónico')ventasElectronicosSoles+=mp['monto'];
+              // if(mp['tipo']=='electrónico')ventasElectronicosSoles+=mp['monto'];
+              if(mp['tipo']=='yape')ventasYapesSoles+=mp['monto'];
+              if(mp['tipo']=='plin')ventasPlinsSoles+=mp['monto'];
             }
             if(mp['divisa']=='USD'){
               if(mp['tipo']=='efectivo')ventasEfectivoDolares+=mp['monto'];
               if(mp['tipo']=='tarjeta')ventasTarjetasDolares+=mp['monto'];
-              if(mp['tipo']=='electrónico')ventasElectronicosDolares+=mp['monto'];
+              // if(mp['tipo']=='electrónico')ventasElectronicosDolares+=mp['monto'];
+              if(mp['tipo']=='yape')ventasYapesDolares+=mp['monto'];
+              if(mp['tipo']=='plin')ventasPlinsDolares+=mp['monto'];
             }
           });
         });
@@ -94,7 +102,9 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
           {'dato':'Fondo inicial','soles':turnoActual!['fondoInicialSoles'],'dolares':turnoActual!['fondoInicialDolares']},
           {'dato':'Ventas efectivo','soles':ventasEfectivoSoles,'dolares':ventasEfectivoDolares},
           {'dato':'Ventas tarjetas','soles':ventasTarjetasSoles,'dolares':ventasTarjetasDolares},
-          {'dato':'Pagos electrónicos','soles':ventasElectronicosSoles,'dolares':ventasElectronicosDolares},
+          // {'dato':'Pagos electrónicos','soles':ventasElectronicosSoles,'dolares':ventasElectronicosDolares},
+          {'dato':'Pagos Yape','soles':ventasYapesSoles,'dolares':ventasYapesDolares},
+          {'dato':'Pagos Plin','soles':ventasPlinsSoles,'dolares':ventasPlinsDolares},
           //TODO: Egreso es lo que el usuario sacó en efectivo del monto de las ventas en efectivo. Esto se registra en la pantalla de egresos.dart
           {'dato':'Egresos','soles':'0.00','dolares':'0.00'},
           //TODO: Despues me explicarán que es esto
