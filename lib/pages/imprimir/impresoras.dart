@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import '../../services/helper.dart';
 import '../../widgets/default_background.dart';
 import '../../widgets/dialog_title.dart';
@@ -18,39 +19,57 @@ class _ImpresorasState extends State<Impresoras> {
 
   List<Map> _printers = [];
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_)async{
+  //     doLoad(context);
+  //     try{
+        
+  //     	//TODO: Fetch real data
+  //       setState((){
+  //         _printers = [
+  //           {
+  //             'codigo': '1',
+  //             'nombre': 'IPCAJA',
+  //             'nombreDeRed': '192.168.1.211',
+  //             'nroDeSerie': '001',
+  //             'nroDeActualizacion': '007',
+  //             'isDocument': true,
+  //             'active': false,
+  //           },
+  //           {
+  //             'codigo': '2',
+  //             'nombre': 'IPCAJA 2',
+  //             'nombreDeRed': '192.168.1.216',
+  //             'nroDeSerie': '002',
+  //             'nroDeActualizacion': '009',
+  //             'isDocument': false,
+  //             'active': true,
+  //           },
+  //         ];
+  //       });
+  //     }
+  //     catch(e){await alert(context,'Ocurrió un error');}
+  //     finally{Navigator.pop(context);}
+  //   });
+  // }
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_)async{
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       doLoad(context);
-      try{
-        
-      	//TODO: Fetch real data
-        setState((){
-          _printers = [
-            {
-              'codigo': '1',
-              'nombre': 'IPCAJA',
-              'nombreDeRed': '192.168.1.211',
-              'nroDeSerie': '001',
-              'nroDeActualizacion': '007',
-              'isDocument': true,
-              'active': false,
-            },
-            {
-              'codigo': '2',
-              'nombre': 'IPCAJA 2',
-              'nombreDeRed': '192.168.1.216',
-              'nroDeSerie': '002',
-              'nroDeActualizacion': '009',
-              'isDocument': false,
-              'active': true,
-            },
-          ];
+      try {
+        final box = Hive.box<Map>('Impresoras');
+        final impresoras = box.values.toList();
+        setState(() {
+          _printers = impresoras.cast<Map>();
         });
+      } catch (e) {
+        await alert(context, 'Ocurrió un error');
+      } finally {
+        Navigator.pop(context);
       }
-      catch(e){await alert(context,'Ocurrió un error');}
-      finally{Navigator.pop(context);}
     });
   }
 
@@ -80,7 +99,32 @@ class _ImpresorasState extends State<Impresoras> {
                 ..._printers.map<Widget>((Map printer)=>PrinterCard(
                   printer,
                   ()=>goTo(context,PrinterScreen(printer)),
-                  ()=>setState(()=>printer['active']=!printer['active']),
+                  () async {
+                    final box = Hive.box<Map>('Impresoras');
+
+                    // Desactivar todas
+                    for (var key in box.keys) {
+                      final imp = box.get(key);
+                      if (imp != null) {
+                        await box.put(key, {...imp, 'active': false});
+                      }
+                    }
+
+                    // Activar la seleccionada
+                    final printerKey = box.keys.firstWhere(
+                      (key) => box.get(key)?['codigo'] == printer['codigo'],
+                      orElse: () => null,
+                    );
+                    if (printerKey != null) {
+                      await box.put(printerKey, {...printer, 'active': true});
+                    }
+
+                    // Refrescar lista
+                    final updatedPrinters = box.values.toList();
+                    setState(() {
+                      _printers = updatedPrinters.cast<Map>();
+                    });
+                  },
                 )).toList(),
               ],
             ),

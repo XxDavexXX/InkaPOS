@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/db.dart';
 import '../services/helper.dart';
@@ -28,10 +29,21 @@ class Dashboard extends StatefulWidget {
 class _DashboardState extends State<Dashboard> {
 
 	void _download()async{
-		int? index = await choose(context,['Descarga de datos','Enviar datos'],text:'Sincronización de datos');
+		int? index = await choose(
+			context,
+			['Descarga de datos', 'Enviar datos', 'Actualizar impresoras'],
+			text: 'Sincronización de datos',
+		);
 		if(index==null)return;
 		if(index==0)_descargarDatos();
 		if(index==1)_enviarDatos();
+		if(index==2){
+		loadThis(context, () async {
+			await _fetchPrinters();
+			await alert(context, 'Impresoras actualizadas');
+		});
+		}
+
 	}
 
 	//TODO: Just mock data
@@ -50,6 +62,38 @@ class _DashboardState extends State<Dashboard> {
 	    {'id':100,'nombre':'Helado Fresa','nombreCorto':'Helado Fresa','precioUnit':15.0,'precioDelivery':15.0,'precioVentanilla':15.0,'codigoDeBarras':'1234','grupo':'Tickets','subgrupo':'Cervezas y complementos','combo':true,'flexible':false,'igv':10.0,'cantidad':1},
 	  ];
   	for(int i=0; i < list.length; i++){await addProduct(list[i]);}
+	}
+
+	Future<void> _fetchPrinters() async {
+		final box = Hive.box<Map>('Impresoras');
+		await box.clear();
+		await box.add({
+			'codigo': '1',
+			'nombre': 'IPCAJA',
+			'nombreDeRed': '192.168.1.211',
+			'nroDeSerie': 'B001',
+			'nroDeActualizacion': '007',
+			'isDocument': true,
+			'active': true,
+		});
+		await box.add({
+			'codigo': '2',
+			'nombre': 'IPCAJA 2',
+			'nombreDeRed': '192.168.1.216',
+			'nroDeSerie': 'B002',
+			'nroDeActualizacion': '009',
+			'isDocument': true,
+			'active': false,
+		});
+		await box.add({
+			'codigo': '3',
+			'nombre': 'IPCOCINA',
+			'nombreDeRed': '192.168.1.250',
+			'nroDeSerie': 'P001',
+			'nroDeActualizacion': '011',
+			'isDocument': false,
+			'active': false,
+		});
 	}
 
 	//TODO: Just mock data

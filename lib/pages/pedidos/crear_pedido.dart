@@ -37,17 +37,27 @@ class _CrearPedidoState extends State<CrearPedido> {
   
   Map? _selectedSeller;
   
-  void _onProductTap(Map product)async{
-    if(getCart().any((x)=>x['id']==product['id']))return;
-    doLoad(context);
-    try{
-      await addCartItem(product);
-      setState((){});
-      showSnackBar(context,'Agregado al pedido:',product['nombre'],seconds:1);
+  void _onProductTap(Map product) async {
+    if (getCart().any((x) => x['productID'] == product['id'])) {
+      await alert(context, 'Este producto ya está en el carrito.');
+      return;
     }
-    catch(e,tr){await alert(context,'Ocurrió un error');p('$e\n$tr');}
-    finally{Navigator.pop(context);}
+
+
+    doLoad(context);
+    try {
+      final cloned = {...product}; // <- importante para evitar referencias compartidas
+      await addCartItem(cloned);
+      setState(() {}); // Actualiza la UI
+      showSnackBar(context, 'Agregado al pedido:', product['nombre'], seconds: 1);
+    } catch (e, tr) {
+      await alert(context, 'Ocurrió un error');
+      p('$e\n$tr');
+    } finally {
+      Navigator.pop(context);
+    }
   }
+
 
   bool _productIsMatch(Map product){
     bool correctSubgroup = _selectedSubgroup=='TODOS' || _selectedSubgroup==product['subgrupo'];

@@ -138,12 +138,16 @@ class _TotalAPagarState extends State<TotalAPagar> {
     };
 
     final serieCaja = getSerieActiva(); // función definida abajo
-    final serie = datos['tipo'] == 'boleta' ? 'B$serieCaja' : 'F$serieCaja';
 
+    // datos['numeroDeComprobante'] = await generarNumeroDeComprobantePorCaja(
+    //   tipo: datos['tipo'],
+    //   serie: serie,
+    // );
     datos['numeroDeComprobante'] = await generarNumeroDeComprobantePorCaja(
-      tipo: datos['tipo'],
-      serie: serie,
+      tipo: 'boleta',
+      serie: getSerieActiva()
     );
+
     datos['nroDeSerie'] = serieCaja; // lo puedes guardar por auditoría
 
     //Guardar el pedido en registros de ventas

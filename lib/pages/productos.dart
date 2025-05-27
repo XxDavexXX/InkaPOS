@@ -22,6 +22,7 @@ class _ProductosState extends State<Productos> {
   String _filter = '';
   late final TextEditingController _search;
   List<Map> _products = [];
+  Set<int> _lockedProductIds = {};
 
   @override
   void initState() {
@@ -30,10 +31,43 @@ class _ProductosState extends State<Productos> {
     _products = getProducts();
   }
 
-  void _onProductTap(Map product)async{
-    await goTo(context,EditProduct(product));
-    setState(()=>_products=getProducts());
+  void _onProductTap(Map product) async {
+    final int id = product['id'];
+    if (_lockedProductIds.contains(id)) return;
+
+    setState(() {
+      _lockedProductIds.add(id);
+    });
+
+    if (getCart().any((x) => x['id'] == id)) {
+      await alert(context, 'Este producto ya está en el carrito.');
+      setState(() {
+        _lockedProductIds.remove(id);
+      });
+      return;
+    }
+
+    doLoad(context);
+    try {
+      final cloned = {...product};
+      await addCartItem(cloned);
+      setState(() {
+        _lockedProductIds.remove(id);
+      });
+      showSnackBar(context, 'Agregado al pedido:', product['nombre'], seconds: 1);
+    } catch (e, tr) {
+      await alert(context, 'Ocurrió un error');
+      p('$e\n$tr');
+      setState(() {
+        _lockedProductIds.remove(id);
+      });
+    } finally {
+      Navigator.pop(context);
+    }
   }
+
+
+
 
   void _onProductSelected(Map product){
     setState(()=>product['activo']=!(product['activo']??false));
@@ -69,11 +103,14 @@ class _ProductosState extends State<Productos> {
                   hint: 'Buscar productos...',
                   onSubmitted: (x)=>setState(()=>_filter=x.trim().toLowerCase()),
                 ),sep,
-                ..._products.where(_filterProducts).map<Widget>((Map product)=>ProductCard(
-                  product,
-                  ()=>_onProductTap(product),
-                  ()=>_onProductSelected(product),
-                )),
+                ..._products.where(_filterProducts).map((Map product) {
+                  final int id = product['id'];
+                  return ProductCard(
+                    product,
+                    () => _onProductTap(product),
+                    _lockedProductIds.contains(id),
+                  );
+                }),
               ],
             ),
           ],
@@ -86,30 +123,36 @@ class _ProductosState extends State<Productos> {
 class ProductCard extends StatelessWidget {
   final Map product;
   final VoidCallback onProductTap;
-  final VoidCallback onProductSelected;
-  const ProductCard(this.product,this.onProductTap,this.onProductSelected,{super.key});
+  final bool isLocked;
+  const ProductCard(this.product, this.onProductTap, this.isLocked, {super.key});
+
   @override
-  Widget build(BuildContext context)=>Padding(
-    padding: const EdgeInsets.only(bottom:16),
-    child: Div(
-      borderColor: prim(context),
-      borderRadius: 23,
-      padding: const EdgeInsets.symmetric(horizontal:12,vertical:5),
-      child: ListTile(
-        onTap: onProductTap,
-        title: P(product['nombre'],color:Colors.black),
-        subtitle: P('${product['precioUnit']}',color:Colors.black,size:14),
-        trailing: IconButton(
-          icon: Icon(
-            (product['activo']??false)?Icons.check_box:Icons.check_box_outline_blank,
-            color:prim(context),
+  Widget build(BuildContext context) {
+    final Color borderColor = isLocked ? Colors.grey : prim(context);
+    final Color textColor = isLocked ? Colors.grey.shade600 : Colors.black;
+    return Opacity(
+      opacity: isLocked ? 0.5 : 1.0,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Div(
+          borderColor: borderColor,
+          borderRadius: 23,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          child: ListTile(
+            onTap: isLocked ? null : onProductTap,
+            title: P(product['nombre'], color: textColor),
+            subtitle: P('${product['precioUnit']}', color: textColor, size: 14),
+            trailing: Icon(
+              (product['activo'] ?? false) ? Icons.check_box : Icons.check_box_outline_blank,
+              color: prim(context),
+            ),
           ),
-          onPressed: onProductSelected,
         ),
       ),
-    ),
-  );
+    );
+  }
 }
+
 
 
 class EditProduct extends StatefulWidget {

@@ -54,35 +54,60 @@ Future deleteAllTurnos()async=>await turnos.clear();
 // Cart
 // E.g. the same as product but with the 'cantidad' field as an integer
 Map? getCartItem(int itemID)=>cart.get(itemID);
-List<Map> getCart(){
-	List<Map> list = [];
-	cart.keys.toList().forEach((id){
-		list.add(getCartItem(id)!);
-	});
-	return list;
+List<Map> getCart() {
+  return cart.values.map((e) => Map<String, dynamic>.from(e)).toList();
 }
-Future<int> addCartItem(Map newOne)async{
-	int id = await cart.add(newOne);
-	Map map = {...newOne,'id':id,'cantidad':1};
-	await cart.put(id,map);
-	return id;
+
+// List<Map> getCart(){
+// 	List<Map> list = [];
+// 	cart.keys.toList().forEach((id){
+// 		list.add(getCartItem(id)!);
+// 	});
+// 	return list;
+// }
+Future<int> addCartItem(Map newOne) async {
+  int cartID = await cart.add({...newOne});
+  Map map = {
+    ...newOne,
+    'id': cartID, // ID del carrito (clave Hive)
+    'productID': newOne['id'], // ID real del producto
+    'cantidad': 1
+  };
+  await cart.put(cartID, map);
+  return cartID;
 }
+
+
+// Future<int> addCartItem(Map newOne)async{
+// 	int id = await cart.add(newOne);
+// 	Map map = {...newOne,'id':id,'cantidad':1};
+// 	await cart.put(id,map);
+// 	return id;
+// }
 Future setCartItem(Map newOne)async=>await cart.put(newOne['id'],newOne);
 Future deleteCartItem(int id)async=>await cart.delete(id);
 Future deleteAllCartItem()async=>await cart.clear();
  
+// String getSerieActiva() {
+//   // Deberías traer esto desde Hive o un helper donde almacenas las impresoras activas
+//   // Aquí es simulado:
+//   List<Map> impresoras = [
+//     {'nombre': 'IPCAJA', 'nroDeSerie': '001', 'active': true},
+//     {'nombre': 'IPCAJA 2', 'nroDeSerie': '002', 'active': false},
+//   ];
+
+//   final activa = impresoras.firstWhere((p) => p['active'] == true, orElse: () => {'nroDeSerie': '001'});
+//   return activa['nroDeSerie'] ?? '001';
+// }
+
 String getSerieActiva() {
-  // Deberías traer esto desde Hive o un helper donde almacenas las impresoras activas
-  // Aquí es simulado:
-  List<Map> impresoras = [
-    {'nombre': 'IPCAJA', 'nroDeSerie': '001', 'active': true},
-    {'nombre': 'IPCAJA 2', 'nroDeSerie': '002', 'active': false},
-  ];
-
-  final activa = impresoras.firstWhere((p) => p['active'] == true, orElse: () => {'nroDeSerie': '001'});
-  return activa['nroDeSerie'] ?? '001';
+  final Box<Map> impresoras = Hive.box<Map>('Impresoras');
+  final activePrinter = impresoras.values.firstWhere(
+    (p) => p['active'] == true,
+    orElse: () => {'nroDeSerie': 'B001'}, // fallback
+  );
+  return activePrinter['nroDeSerie'] ?? 'B001';
 }
-
 
 Future<String> generarNumeroDeComprobantePorCaja({
   required String tipo, // 'boleta' o 'factura'
@@ -135,13 +160,16 @@ flexible: bool,
 cantidad: int,
 */
 Map? getProduct(int productID)=>products.get(productID);
-List<Map> getProducts(){
-	List<Map> list = [];
-	products.keys.toList().forEach((prodID){
-		list.add(getProduct(prodID)!);
-	});
-	return list;
+List<Map> getProducts() {
+  return products.values.map((e) => Map<String, dynamic>.from(e)).toList();
 }
+// List<Map> getProducts(){
+// 	List<Map> list = [];
+// 	products.keys.toList().forEach((prodID){
+// 		list.add(getProduct(prodID)!);
+// 	});
+// 	return list;
+// }
 Future<int> addProduct(Map newOne)async{
 	int id = await products.add(newOne);
 	Map map = {...newOne,'id':id};
