@@ -25,14 +25,70 @@ class _AbrirTurnoState extends State<AbrirTurno> {
   double _fondoInicialSoles = 0;
   double _fondoInicialDolares = 0;
 
-  Future<void> _fetchDataFromSunat()=>loadThis(context,()async{
-    Map<String,double>? result = await DB.tipoDeCambioSunat();
-    if(result==null){await alert(context,'No se pudo establecer conexión con la SUNAT');return;}
-    setState((){
-      _precioDeCompra = result!['precioDeCompra']!;
-      _precioDeVenta = result!['precioDeVenta']!;
-    });
-  });
+  Future<void> _fetchDataFromSunat() async {
+    doLoad(context);
+    final result = await DB.tipoDeCambioSunat();
+    Navigator.pop(context); // Cierra el loader
+
+    if (result == null) {
+      await alert(context, '❌ No se pudo obtener el tipo de cambio desde SUNAT.');
+      return;
+    }
+
+    final compra = result['precioDeCompra']!;
+    final venta = result['precioDeVenta']!;
+
+    await dialog(
+      context,
+      background: Colors.white,
+      children: [
+        DialogTitle('Tipo de cambio SUNAT'),
+        sep,
+        P('Fecha: ${getDateString(DateTime.now().millisecondsSinceEpoch, 'day/month/year')}', color: Colors.black, size: 14),
+        sep,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Column(
+              children: [
+                P('Compra', bold: true, size: 16, color: Colors.black),
+                sep,
+                P('S/ ${compra.toStringAsFixed(3)}', size: 20, bold: true, color: Colors.green.shade700),
+              ],
+            ),
+            Column(
+              children: [
+                P('Venta', bold: true, size: 16, color: Colors.black),
+                sep,
+                P('S/ ${venta.toStringAsFixed(3)}', size: 20, bold: true, color: Colors.blue.shade700),
+              ],
+            ),
+          ],
+        ),
+        sep,
+        P('¿Aplicar este tipo de cambio?', align: P.center, size: 14, color: Colors.black),
+        sep,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Button(P('Usar', bold: true, color: Colors.white), () {
+              setState(() {
+                _precioDeCompra = compra;
+                _precioDeVenta = venta;
+              });
+              Navigator.pop(context); // cierra el popup
+            }),
+            sep,
+            Button(P('Cancelar', bold: true, color: Colors.white), () {
+              Navigator.pop(context); // solo cierra
+            }),
+          ],
+        )
+      ],
+    );
+  }
+
+
 
   void _editPrecioDeCompra()async{
     String? newVal = await prompt(

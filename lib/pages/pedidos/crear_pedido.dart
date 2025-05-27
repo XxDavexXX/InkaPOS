@@ -49,7 +49,7 @@ class _CrearPedidoState extends State<CrearPedido> {
       final cloned = {...product}; // <- importante para evitar referencias compartidas
       await addCartItem(cloned);
       setState(() {}); // Actualiza la UI
-      showSnackBar(context, 'Agregado al pedido:', product['nombre'], seconds: 1);
+      showSuccessSnackBar(context, 'Agregado al pedido:', product['nombre'], seconds: 1);
     } catch (e, tr) {
       await alert(context, 'Ocurrió un error');
       p('$e\n$tr');
@@ -162,10 +162,14 @@ class _CrearPedidoState extends State<CrearPedido> {
               child: SingleChildScrollView(
                 child: Wrap(
                   alignment: WrapAlignment.spaceEvenly,
-                  children: _products.where(_productIsMatch).map<Widget>((Map product)=>ProductCard(
-                    product,
-                    ()=>_onProductTap(product),
-                  )).toList(),
+                  children: _products.where(_productIsMatch).map<Widget>((Map product) {
+                    bool yaEnCarrito = getCart().any((x) => x['productID'] == product['id']);
+                    return ProductCard(
+                      product,
+                      yaEnCarrito ? null : () => _onProductTap(product),
+                      yaEnCarrito: yaEnCarrito,
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -212,32 +216,47 @@ class BottomBar extends StatelessWidget {
 
 class ProductCard extends StatelessWidget {
   final Map product;
-  final VoidCallback onProductTap;
-  const ProductCard(this.product,this.onProductTap,{super.key});
+  final VoidCallback? onTap;
+  final bool yaEnCarrito;
+
+  const ProductCard(this.product, this.onTap, {this.yaEnCarrito = false, super.key});
+
   @override
-  Widget build(BuildContext context)=>Padding(
+  Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.all(5),
     child: InkWell(
-      onTap: onProductTap,
+      onTap: onTap,
+      splashColor: yaEnCarrito ? Colors.transparent : null,
       child: Div(
         width: 107,
         borderWidth: 1,
-        borderColor: prim(context),
-        background: Colors.transparent,
+        borderColor: yaEnCarrito ? Colors.grey.shade600 : prim(context),
+        background: yaEnCarrito ? Colors.grey.shade900 : Colors.transparent,
         borderRadius: 16,
         padding: const EdgeInsets.all(7),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            P(product['nombre'],bold:true,color:Colors.white,overflow:TextOverflow.clip,align:TextAlign.center),
-            P('S/${product['precioUnit']}',color:Colors.white,size:14),
+            P(
+              product['nombre'],
+              bold: true,
+              color: yaEnCarrito ? Colors.grey.shade300 : Colors.white,
+              overflow: TextOverflow.clip,
+              align: TextAlign.center,
+            ),
+            P(
+              'S/${product['precioUnit']}',
+              color: yaEnCarrito ? Colors.grey.shade400 : Colors.white,
+              size: 14,
+            ),
           ],
         ),
       ),
     ),
   );
 }
+
 
 class BottomBarItem extends StatelessWidget {
   final IconData icon;

@@ -39,7 +39,7 @@ class _TotalAPagarState extends State<TotalAPagar> {
     _metodosDePago = getAllMetodosDePago().map((Map mp)=>{...mp, 'activo': false, 'monto':0.0}).toList();
     //Seleccionar al inicio la opción de visa en caso exista
     _metodosDePago.forEach((Map mp){
-      if(mp['nombre'].toLowerCase().contains('yape')){
+      if(mp['nombre'].toLowerCase().contains('visa')){
         mp['activo']=true;
         //Cargar el monto exacto con el método de pago tarjeta
         mp['monto']=_total();

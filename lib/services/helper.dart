@@ -376,6 +376,52 @@ void showSnackBar(BuildContext context,String title,String subtitle,{int? second
   ));
 }
 
+
+void showSuccessSnackBar(BuildContext context, String title, String subtitle, {int seconds = 2}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      duration: Duration(seconds: seconds),
+      backgroundColor: Colors.transparent,
+      behavior: SnackBarBehavior.floating,
+      elevation: 0,
+      content: Container(
+        padding: const EdgeInsets.all(8),
+        height: 72,
+        decoration: BoxDecoration(
+          color: Colors.green.shade700,
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(width: 12),
+            Icon(Icons.check_circle, color: Colors.white, size: 30),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 15, color: Colors.white),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+
 Future<void> loadThis(BuildContext context,Function cb,{String errMsg='Ocurrió un error'})async{
   doLoad(context);
   try{await cb();}

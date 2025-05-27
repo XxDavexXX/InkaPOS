@@ -30,10 +30,34 @@ class DB {
     //TODO: dashboard.dart. E.g.: https://almacenweb.trinetsoft.com/webkelys
     return 'trinetsoft.com';
   }
-  static Future<Map<String,double>?> tipoDeCambioSunat()async{
-    //TODO: abrir_turno.dart
-    await Future.delayed(const Duration(milliseconds:550));
-    return null;
+  // static Future<Map<String,double>?> tipoDeCambioSunat()async{
+  //   //TODO: abrir_turno.dart
+  //   await Future.delayed(const Duration(milliseconds:550));
+  //   return null;
+  // }
+
+  static Future<Map<String, double>?> tipoDeCambioSunat() async {
+    final uri = Uri.parse('https://api.apis.net.pe/v1/tipo-cambio-sunat');
+
+    try {
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'precioDeCompra': (data['compra'] as num).toDouble(),
+          'precioDeVenta': (data['venta'] as num).toDouble(),
+        };
+      } else {
+        print('SUNAT error: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error consultando SUNAT: $e');
+      return null;
+    }
   }
+
+
+  
   
 }
