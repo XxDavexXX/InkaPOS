@@ -71,16 +71,16 @@ class _AbrirTurnoState extends State<AbrirTurno> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Button(P('Salir', bold: true, color: Colors.white), () {
+              Navigator.pop(context); // solo cierra
+            }),
+            sep,
             Button(P('Usar', bold: true, color: Colors.white), () {
               setState(() {
                 _precioDeCompra = compra;
                 _precioDeVenta = venta;
               });
               Navigator.pop(context); // cierra el popup
-            }),
-            sep,
-            Button(P('Cancelar', bold: true, color: Colors.white), () {
-              Navigator.pop(context); // solo cierra
             }),
           ],
         )
@@ -147,14 +147,25 @@ class _AbrirTurnoState extends State<AbrirTurno> {
     setState(()=>_fondoInicialDolares=price);
   }
 
-  void _aceptar()=>back(context,data:{
+  // void _aceptar()=>back(context,data:{
+  //   'id': DateTime.now().millisecondsSinceEpoch,
+  //   'precioDeCompra': _precioDeCompra,
+  //   'precioDeVenta': _precioDeVenta,
+  //   'fondoInicialSoles': _fondoInicialSoles,
+  //   'fondoInicialDolares': _fondoInicialDolares,
+  //   'usuarioID': getUser()!['id'],
+  // });
+
+  void _aceptar() => back(context, data: {
     'id': DateTime.now().millisecondsSinceEpoch,
     'precioDeCompra': _precioDeCompra,
     'precioDeVenta': _precioDeVenta,
     'fondoInicialSoles': _fondoInicialSoles,
     'fondoInicialDolares': _fondoInicialDolares,
     'usuarioID': getUser()!['id'],
+    'cajaID': getCajaActual()?['codigo'], // << NUEVO
   });
+
 
   @override
   Widget build(BuildContext context) {

@@ -83,10 +83,10 @@ Future<bool?> confirm(BuildContext context, String question, {bool dismissible=t
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal:23),
-                  child: Text('Si',style:TextStyle(fontSize:17,color:Theme.of(context).colorScheme.onPrimary)),
+                  child: Text('No',style:TextStyle(fontSize:17,color:Theme.of(context).colorScheme.onPrimary)),
                 ),
                 onPressed: (){
-                  answer = true;
+                  answer = false;
                   Navigator.pop(context);
                 },
               ),
@@ -97,10 +97,10 @@ Future<bool?> confirm(BuildContext context, String question, {bool dismissible=t
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal:23),
-                  child: Text('No',style:TextStyle(fontSize:17,color:Theme.of(context).colorScheme.onPrimary)),
+                  child: Text('Si',style:TextStyle(fontSize:17,color:Theme.of(context).colorScheme.onPrimary)),
                 ),
                 onPressed: (){
-                  answer = false;
+                  answer = true;
                   Navigator.pop(context);
                 },
               ),

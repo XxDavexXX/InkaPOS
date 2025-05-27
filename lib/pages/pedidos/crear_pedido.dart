@@ -38,18 +38,23 @@ class _CrearPedidoState extends State<CrearPedido> {
   Map? _selectedSeller;
   
   void _onProductTap(Map product) async {
-    if (getCart().any((x) => x['productID'] == product['id'])) {
-      await alert(context, 'Este producto ya está en el carrito.');
+    final cart = getCart();
+    final existing = cart.firstWhere(
+      (x) => x['productID'] == product['id'],
+      orElse: () => <String, dynamic>{}, // ← solución clave
+    );
+
+    if (existing.isNotEmpty) {
+      await deleteCartItem(existing['id']);
+      setState(() {});
       return;
     }
 
-
     doLoad(context);
     try {
-      final cloned = {...product}; // <- importante para evitar referencias compartidas
+      final cloned = {...product};
       await addCartItem(cloned);
-      setState(() {}); // Actualiza la UI
-      showSuccessSnackBar(context, 'Agregado al pedido:', product['nombre'], seconds: 1);
+      setState(() {});
     } catch (e, tr) {
       await alert(context, 'Ocurrió un error');
       p('$e\n$tr');
@@ -57,6 +62,9 @@ class _CrearPedidoState extends State<CrearPedido> {
       Navigator.pop(context);
     }
   }
+
+
+
 
 
   bool _productIsMatch(Map product){
@@ -166,7 +174,7 @@ class _CrearPedidoState extends State<CrearPedido> {
                     bool yaEnCarrito = getCart().any((x) => x['productID'] == product['id']);
                     return ProductCard(
                       product,
-                      yaEnCarrito ? null : () => _onProductTap(product),
+                      () => _onProductTap(product),
                       yaEnCarrito: yaEnCarrito,
                     );
                   }).toList(),

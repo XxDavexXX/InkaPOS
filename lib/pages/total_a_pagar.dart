@@ -50,11 +50,25 @@ class _TotalAPagarState extends State<TotalAPagar> {
 
   Map _getMetodoDePagoActivo()=>_metodosDePago.where((mp)=>mp['activo']).toList().first;
 
-  void _seleccionarMetodoDePago(Map mp)=>setState((){
-    _metodosDePago.forEach((m)=>m['activo']=false);
-    mp['activo'] = true;
-    _input = mp['monto'].toString();
+  void _seleccionarMetodoDePago(Map nuevo) => setState(() {
+    double montoAnterior = 0.0;
+
+    for (var mp in _metodosDePago) {
+      if (mp['activo']) {
+        montoAnterior = mp['monto'];
+        mp['monto'] = 0.0;
+      }
+      mp['activo'] = false;
+    }
+
+    nuevo['activo'] = true;
+    nuevo['monto'] += montoAnterior;
+
+    _input = nuevo['monto'].toString();
+    _updateWhatIsLeftToPay(); // Actualiza texto de vuelto o faltante
   });
+
+
 
   //El saldo en soles, si hay dolares, los convierte en soles
   double _saldo(){
@@ -117,48 +131,52 @@ class _TotalAPagarState extends State<TotalAPagar> {
     }
   }
 
-  void _pagar()async{
-    //Verificar que el saldo sea mayor o igual al total a pagar
+  void _pagar() async {
+    bool? continuar = await confirm(context, '¿Deseas continuar con el pago?');
+
+    if (continuar != true) return; // Si cancela, no hace nada
+
+    // Verificar que el saldo sea mayor o igual al total a pagar
     double total = _total();
     double saldo = _saldo();
-    if(total > saldo){alert(context,'Faltan: S/${(total-saldo).toStringAsFixed(2)}');return;}
-    if(_whatIsLeftNumber != 0 && _metodosDePago.where((mp)=>mp['monto']>0).toList().any((mp)=>mp['tipo']!='efectivo')){
-      alert(context,'Solo puede haber vuelto si el método de pago es efectivo');
+    if (total > saldo) {
+      alert(context, 'Faltan: S/${(total - saldo).toStringAsFixed(2)}');
       return;
     }
+    if (_whatIsLeftNumber != 0 && _metodosDePago.where((mp) => mp['monto'] > 0).any((mp) => mp['tipo'] != 'efectivo')) {
+      alert(context, 'Solo puede haber vuelto si el método de pago es efectivo');
+      return;
+    }
+
     Map datos = {
       ...widget.datos,
       'vuelto': _whatIsLeftNumber,
-      // E.g. {abreviatura:'S/',nombre:'Soles',tipo:'efectivo',divisa:'soles',monto:10.0},
-      'metodosDePago': _metodosDePago.where((mp)=>mp['monto']>0).map<Map>((Map mp){
+      'metodosDePago': _metodosDePago.where((mp) => mp['monto'] > 0).map<Map>((Map mp) {
         Map map = {...mp};
         map.remove('activo');
         return map;
       }).toList(),
+      'turnoID': getTurnoActual()?['id'], 
+      'cajaID': getCajaActual()?['codigo'],   
+      'vendedorID': widget.vendedor?['id'], 
     };
-
-    final serieCaja = getSerieActiva(); // función definida abajo
-
-    // datos['numeroDeComprobante'] = await generarNumeroDeComprobantePorCaja(
-    //   tipo: datos['tipo'],
-    //   serie: serie,
-    // );
-    datos['numeroDeComprobante'] = await generarNumeroDeComprobantePorCaja(
-      tipo: 'boleta',
-      serie: getSerieActiva()
+    datos['numeroDeComprobante'] = await generarNumeroDeComprobante(
+      tipo: datos['tipo'], // 'boleta' o 'factura'
     );
 
-    datos['nroDeSerie'] = serieCaja; // lo puedes guardar por auditoría
+    datos['nroDeSerie'] = getSerieActiva(datos['tipo']);
+    datos['codigoDeCaja'] = getCajaActual()?['codigo']; // Opcional pero útil
 
-    //Guardar el pedido en registros de ventas
-    await loadThis(context,()async{
+
+
+    await loadThis(context, () async {
       await addRegistroDeVenta(datos);
       await deleteAllCartItem();
-      showSnackBar(context,'Pedido guardado','En registros de ventas',seconds:2);
+      showSuccessSnackBar(context, 'Pedido guardado', 'En registros de ventas', seconds: 2);
     });
-    //Abrir la pantalla para imprimir la cosa
-    if(datos['tipo']=='boleta')goTo(context,Boleta(datos));
-    if(datos['tipo']=='factura')goTo(context,Factura(datos));
+
+    if (datos['tipo'] == 'boleta') goTo(context, Boleta(datos));
+    if (datos['tipo'] == 'factura') goTo(context, Factura(datos));
   }
 
   @override

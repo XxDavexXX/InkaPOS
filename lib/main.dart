@@ -32,6 +32,8 @@ void main() async {
   await Hive.openBox<Map>('Egresos');
   await Hive.openBox<Map>('Correlativos');
   await Hive.openBox<Map>('Impresoras');
+  await Hive.openBox<Map>('Cajas');
+
   
   // Agregar algunos valores iniciales en la base de datos
   bool appJustInstalled = Hive.box('settings').get('appJustInstalled')==null;

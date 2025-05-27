@@ -31,7 +31,7 @@ class _DashboardState extends State<Dashboard> {
 	void _download()async{
 		int? index = await choose(
 			context,
-			['Descarga de datos', 'Enviar datos', 'Actualizar impresoras'],
+			['Descarga de datos', 'Enviar datos', 'Actualizar impresoras', 'Actualizar cajas'],
 			text: 'Sincronización de datos',
 		);
 		if(index==null)return;
@@ -43,7 +43,12 @@ class _DashboardState extends State<Dashboard> {
 			await alert(context, 'Impresoras actualizadas');
 		});
 		}
-
+		if(index==3){
+		loadThis(context, () async {
+			await _fetchCajas();
+			await alert(context, 'Cajas actualizadas');
+		});
+		}
 	}
 
 	//TODO: Just mock data
@@ -94,6 +99,47 @@ class _DashboardState extends State<Dashboard> {
 			'isDocument': false,
 			'active': false,
 		});
+	}
+
+	// Agrega esta función justo debajo de `_fetchPrinters()` en tu archivo Dashboard
+	Future<void> _fetchCajas() async {
+	final box = Hive.box<Map>('Cajas');
+	await box.clear(); // Opcional: limpiar anteriores
+
+	await box.add({
+		'codigo': 'C001',
+		'nombre': 'Caja Principal',
+		'ubicacion': 'Mostrador A',
+		'serieBoleta': 'B001',
+		'serieFactura': 'F001',
+		'activa': false,
+	});
+	await box.add({
+		'codigo': 'C002',
+		'nombre': 'Caja Secundaria',
+		'ubicacion': 'Mostrador B',
+		'serieBoleta': 'B002',
+		'serieFactura': 'F002',
+		'activa': true,
+	});
+	await box.add({
+		'codigo': 'C003',
+		'nombre': 'Caja Delivery',
+		'ubicacion': 'Zona de envíos',
+		'serieBoleta': 'B003',
+		'serieFactura': 'F003',
+		'activa': false,
+	});
+	await box.add({
+		'codigo': 'C004',
+		'nombre': 'Caja Auxiliar',
+		'ubicacion': 'Almacén',
+		'serieBoleta': 'B004',
+		'serieFactura': 'F004',
+		'activa': false,
+	});
+
+	await setCajaActual(box.values.firstWhere((e) => e['activa'] == true));
 	}
 
 	//TODO: Just mock data

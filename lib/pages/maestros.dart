@@ -7,6 +7,7 @@ import '../widgets/p.dart';
 import 'grupos/grupos.dart';
 import 'grupos/subgrupos.dart';
 import 'productos.dart';
+import 'cajas.dart';
 import 'usuarios/usuarios.dart';
 import 'areas/areas.dart';
 import 'imprimir/impresoras.dart';
@@ -62,6 +63,8 @@ class Maestros extends StatelessWidget {
                 MasterButton(Icons.person,'CLIENTE',()=>goTo(context,const Clientes()),isGrey:true),
                 MasterButton(Icons.visibility,'OBS.',()=>goTo(context,const Observaciones()),isGrey:true),
                 MasterButton(Icons.currency_exchange,'EGRESOS',()=>goTo(context,const Egresos()),isGrey:false),
+                MasterButton(Icons.shopping_bag, 'CAJA', () => goTo(context, const Cajas())), // nuevo botón
+
               ],
             ),
     			],

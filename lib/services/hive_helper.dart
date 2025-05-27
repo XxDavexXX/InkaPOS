@@ -17,7 +17,29 @@ Box subgrupos = Hive.box<Map>('Subgrupos');
 Box areas = Hive.box<Map>('Areas');
 Box egresos = Hive.box<Map>('Egresos');
 Box correlativos = Hive.box<Map>('Correlativos');
+Box cajas = Hive.box<Map>('Cajas');
 
+
+
+Map? getCaja(int id) => cajas.get(id);
+List<Map> getAllCajas() {
+  return cajas.values.map((e) => Map<String, dynamic>.from(e)).toList();
+}
+Future<int> addCaja(Map newOne) async {
+  int id = await cajas.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await cajas.put(id, map);
+  return id;
+}
+Future setCaja(Map newOne) async => await cajas.put(newOne['id'], newOne);
+Future deleteCaja(int id) async => await cajas.delete(id);
+Future deleteAllCajas() async => await cajas.clear();
+// Caja activa
+Future setCajaActual(Map? caja) async {
+  if (caja == null) return await setts.delete('cajaActual');
+  await setts.put('cajaActual', caja);
+}
+Map? getCajaActual() => setts.get('cajaActual');
 
 //Usuario logueado
 Map? getUser()=>setts.get('user');
@@ -100,30 +122,25 @@ Future deleteAllCartItem()async=>await cart.clear();
 //   return activa['nroDeSerie'] ?? '001';
 // }
 
-String getSerieActiva() {
-  final Box<Map> impresoras = Hive.box<Map>('Impresoras');
-  final activePrinter = impresoras.values.firstWhere(
-    (p) => p['active'] == true,
-    orElse: () => {'nroDeSerie': 'B001'}, // fallback
-  );
-  return activePrinter['nroDeSerie'] ?? 'B001';
+String getSerieActiva(String tipo) {
+  final caja = getCajaActual();
+  if (tipo == 'boleta') return caja?['serieBoleta'] ?? 'B000';
+  if (tipo == 'factura') return caja?['serieFactura'] ?? 'F000';
+  return 'T001';
 }
 
-Future<String> generarNumeroDeComprobantePorCaja({
+
+
+Future<String> generarNumeroDeComprobante({
   required String tipo, // 'boleta' o 'factura'
-  required String serie, // 'B001', 'F002', etc.
 }) async {
-  final key = '$tipo-$serie'; // Ejemplo: 'boleta-B001'
+  final serie = getSerieActiva(tipo);
+  final key = '$tipo-$serie';
+
   Map? actual = correlativos.get(key);
-
-  int ultimo = 0;
-  if (actual != null && actual.containsKey('correlativo')) {
-    ultimo = actual['correlativo'];
-  }
-
+  int ultimo = actual != null && actual.containsKey('correlativo') ? actual['correlativo'] : 0;
   final nuevo = ultimo + 1;
 
-  // Guardar el nuevo correlativo
   await correlativos.put(key, {
     'correlativo': nuevo,
     'updatedAt': DateTime.now().millisecondsSinceEpoch,

@@ -29,20 +29,28 @@ class _BoletaState extends State<Boleta> {
     _data = widget.data;
   }
 
-  void _print()async{
-  	bool? ans = await confirm(context,'¿Imprimir?');
-  	if(ans!=true)return;
-    doLoad(context);
-    try{
-      Uint8List? bytes = await _wti.capture();
-      if(bytes==null)return;
-      await goTo(context,Imprimir(bytes));
-      //Going back to dashboard.dart
-      back(context);back(context);back(context);back(context);
+  void _print() async {
+    bool? ans = await confirm(context, '¿Imprimir?');
+    if (ans != true) {
+      back(context); back(context); back(context); back(context);
+      return;
     }
-    catch(e){await alert(context,'Ocurrió un error');p(e.toString());}
-    finally{Navigator.pop(context);}
+
+    doLoad(context);
+    try {
+      Uint8List? bytes = await _wti.capture();
+      if (bytes == null) return;
+      await goTo(context, Imprimir(bytes));
+      // Después de imprimir, volver al Dashboard
+      back(context); back(context); back(context); back(context);
+    } catch (e) {
+      await alert(context, 'Ocurrió un error');
+      p(e.toString());
+    } finally {
+      Navigator.pop(context); // Cierra loader
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

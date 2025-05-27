@@ -68,6 +68,7 @@ class PrintableDocBoleta extends StatelessWidget {
           // Te(reg['id']),
           Te(reg['numeroDeComprobante'] ?? '00000000'),
 
+
           sep,
           Row(
             children: [
@@ -87,7 +88,9 @@ class PrintableDocBoleta extends StatelessWidget {
             children: [
               Te('Caja:',bold:true),
               sep,
-              Te('${getUser()!['usuarios']??'CAJA'}'),
+              // Te('${getUser()!['usuarios']??'CAJA'}'),
+              Te(getCajaActual()?['codigo'] ?? 'CAJA'),
+
             ],
           ),
           SimpleLine(height:3,color:Colors.black),
