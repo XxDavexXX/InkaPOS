@@ -156,15 +156,23 @@ class _AbrirTurnoState extends State<AbrirTurno> {
   //   'usuarioID': getUser()!['id'],
   // });
 
-  void _aceptar() => back(context, data: {
-    'id': DateTime.now().millisecondsSinceEpoch,
-    'precioDeCompra': _precioDeCompra,
-    'precioDeVenta': _precioDeVenta,
-    'fondoInicialSoles': _fondoInicialSoles,
-    'fondoInicialDolares': _fondoInicialDolares,
-    'usuarioID': getUser()!['id'],
-    'cajaID': getCajaActual()?['codigo'], // << NUEVO
-  });
+  void _aceptar() {
+    if (getCajaActual() == null) {
+      alert(context, 'Debes seleccionar una caja activa');
+      return;
+    }
+
+    back(context, data: {
+      'id': DateTime.now().millisecondsSinceEpoch,
+      'precioDeCompra': _precioDeCompra,
+      'precioDeVenta': _precioDeVenta,
+      'fondoInicialSoles': _fondoInicialSoles,
+      'fondoInicialDolares': _fondoInicialDolares,
+      'usuarioID': getUser()!['id'],
+      'cajaID': getCajaActual()?['codigo'],
+      'fechaApertura': DateTime.now().toIso8601String(),
+    });
+  }
 
 
   @override

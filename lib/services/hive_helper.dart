@@ -55,6 +55,7 @@ Future setTurnoActual(Map newTurn)async=>await setts.put('turnoActual',newTurn);
 Future cerrarTurnoActual()async{
 	Map currentTurn = getTurnoActual()!;
 	currentTurn['id'] = currentTurn['id'].toString();
+  currentTurn['fechaCierre'] = DateTime.now().toIso8601String();
 	await addTurno(currentTurn);
 	await setts.delete('turnoActual');
 }

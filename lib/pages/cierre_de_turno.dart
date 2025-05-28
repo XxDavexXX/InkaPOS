@@ -68,7 +68,11 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
       try{
         int userID = getUser()!['id'];
         //Sacando los datos de los registro del turno
-        List<Map> registros=getAllRegistrosDeVenta().where((reg)=>reg['turno']==turnoActual['id']).toList();
+        // List<Map> registros=getAllRegistrosDeVenta().where((reg)=>reg['turno']==turnoActual['id']).toList();
+        List<Map> registros = getAllRegistrosDeVenta()
+        .where((reg) =>
+            reg['turnoID'] == turnoActual['id'] &&
+            reg['cajaID'] == turnoActual['cajaID']).toList();
         double ventasEfectivoSoles = 0.0;
         double ventasEfectivoDolares = 0.0;
         double ventasTarjetasSoles = 0.0;
