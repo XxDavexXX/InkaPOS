@@ -120,7 +120,7 @@ class _DashboardState extends State<Dashboard> {
 		'ubicacion': 'Mostrador B',
 		'serieBoleta': 'B002',
 		'serieFactura': 'F002',
-		'activa': true,
+		'activa': false,
 	});
 	await box.add({
 		'codigo': 'C003',
@@ -257,14 +257,24 @@ class _DashboardState extends State<Dashboard> {
 		if(opt==1)goTo(context,const ConfiguracionDeCaja());
 	}
 
-	void _aFacturar()async{
-		if(getTurnoActual()==null){
-			Map? openingData = await goTo(context,const AbrirTurno());
-			if(openingData==null)return;
-			await setTurnoActual(openingData);
-		}
-		goTo(context,const CrearPedido());
-	}
+	void _aFacturar() async {
+    if (getTurnoActual() == null) {
+      Map? openingData = await goTo(context, const AbrirTurno());
+      if (openingData == null) return;
+      await setTurnoActual(openingData);
+    }
+
+    final turno = getTurnoActual();
+    final user = getUser();
+
+    if (turno?['usuarioID'] != user?['id']) {
+      await alert(context, 'Solo el usuario que abrió el turno puede operar esta caja.\nTurno abierto por otro usuario.');
+      return;
+    }
+
+    goTo(context, const CrearPedido());
+  }
+
 
 	void _testing()async{
 		List<String> opts=[
