@@ -12,45 +12,51 @@ import 'p.dart';
 
 class PrintableDocBoleta extends StatelessWidget {
   final Map reg;
-  const PrintableDocBoleta(this.reg,{super.key});
+  const PrintableDocBoleta(this.reg, {super.key});
 
-  String _getPrefijoDelID(Map registro){
-    switch(registro['tipo']){
-      case 'boleta':return 'TB-';
-      case 'factura':return 'TF-';
-      default: return '';
+  String _getPrefijoDelID(Map registro) {
+    switch (registro['tipo']) {
+      case 'boleta':
+        return 'TB-';
+      case 'factura':
+        return 'TF-';
+      default:
+        return '';
     }
   }
 
-  String _getTotal(){
+  String _getTotal() {
     double subtotal = 0;
-    reg['productos'].forEach((prod){
-      subtotal = subtotal + (prod['cantidad']*prod['precioUnit']);
+    reg['productos'].forEach((prod) {
+      subtotal = subtotal + (prod['cantidad'] * prod['precioUnit']);
     });
     return subtotal.toStringAsFixed(2);
   }
 
-  String _precioNeto(){
+  String _precioNeto() {
     double precioNeto = 0.0;
-    reg['productos'].forEach((prod){
+    reg['productos'].forEach((prod) {
       double productTotal = prod['cantidad'] * prod['precioUnit'];
-      double productRealPriceWithoutIGV = productTotal / (1.0 + (prod['igv']/100));
+      double productRealPriceWithoutIGV =
+          productTotal / (1.0 + (prod['igv'] / 100));
       precioNeto += productRealPriceWithoutIGV;
     });
     return precioNeto.toStringAsFixed(2);
   }
-  
-  String _descuentoDelIgv(){
+
+  String _descuentoDelIgv() {
     double total = double.parse(_getTotal());
     double netPrice = double.parse(_precioNeto());
-    int igvDisccount = int.parse((total*100).toStringAsFixed(2).split('.').first) - int.parse((netPrice*100).toStringAsFixed(2).split('.').first);
-    return (igvDisccount/100).toString();
+    int igvDisccount =
+        int.parse((total * 100).toStringAsFixed(2).split('.').first) -
+        int.parse((netPrice * 100).toStringAsFixed(2).split('.').first);
+    return (igvDisccount / 100).toString();
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Div(
-      width: 320,   
+      width: 320,
       background: const Color.fromARGB(255, 255, 255, 255),
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
       child: Column(
@@ -62,81 +68,109 @@ class PrintableDocBoleta extends StatelessWidget {
           Te('TRINETCORP S.A.C.'),
           Te(reg['datosDelNegocio']['nombre']),
           Te(reg['datosDelNegocio']['direccion']),
-          Te('RUC: '+reg['datosDelNegocio']['ruc']),
+          Te('RUC: ' + reg['datosDelNegocio']['ruc']),
           sep,
-          Te('BOLETA DE VENTA ELECTRÓNICA',bold:true),
+          Te('BOLETA DE VENTA ELECTRÓNICA', bold: true),
           // Te(reg['id']),
           Te(reg['numeroDeComprobante'] ?? '00000000'),
 
-
+          // Row(
+          //         children: [
+          //           Te('N° Pedido:',bold:true),
+          //           sep,
+          //           Te(reg['numeroDePedido']),
+          //         ],
+          //       ),
           sep,
           Row(
             children: [
-              Te('Fecha:',bold:true),
+              Te('Fecha:', bold: true),
               sep,
-              Te(getDateString(reg['fecha'],'day/month/year hour:minute:second')),
+              Te(
+                getDateString(
+                  reg['fecha'],
+                  'day/month/year hour:minute:second',
+                ),
+              ),
             ],
           ),
           Row(
             children: [
-              Te('N° Pedido:',bold:true),
+              Te('Caja:', bold: true),
               sep,
-              Te(reg['numeroDePedido']),
+              Te(
+                getCajaActual()?['nombre'] ??
+                    getCajaActual()?['codigo'] ??
+                    'CAJA',
+              ),
             ],
           ),
           Row(
             children: [
-              Te('Caja:',bold:true),
+              Te('Cajero:', bold: true),
               sep,
-              // Te('${getUser()!['usuarios']??'CAJA'}'),
-              Te(getCajaActual()?['codigo'] ?? 'CAJA'),
+              Te(getUser()?['nombres'] ?? 'Usuario'),
+            ],
+          ),
 
-            ],
+          SimpleLine(height: 3, color: Colors.black),
+          MyRowData(
+            'Cliente: ',
+            reg['cliente']?['nombre']?.toString().trim().isNotEmpty == true
+                ? reg['cliente']['nombre']
+                : 'Consumidor final',
           ),
-          SimpleLine(height:3,color:Colors.black),
-          MyRowData('Cliente: ',reg['cliente']['nombre']),
-          if(reg['cliente']['documento']!=null)MyRowData(
-            '${reg['cliente']['documento']}: ',
-            reg['cliente']['nroDeDocumento'],
+          // Documento de identidad (DNI, RUC, etc.)
+          MyRowData(
+            '${reg['cliente']?['documento']?.toString().toUpperCase() ?? 'DNI'}: ',
+            reg['cliente']?['nroDeDocumento']?.toString().trim().isNotEmpty ==
+                    true
+                ? reg['cliente']['nroDeDocumento']
+                : '',
           ),
-          SimpleLine(height:3,color:Colors.black),
+          SimpleLine(height: 3, color: Colors.black),
           ProductsTable(reg['productos']),
           Align(
             alignment: Alignment.centerRight,
-            child: Te('SubTotal: '+_getTotal(),bold:true),
+            child: Te('SubTotal: ' + _getTotal(), bold: true),
           ),
           sep,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Te('P. Neto:',bold:true),
-              Te('S/${_precioNeto()}',bold:true),
+              Te('P. Neto:', bold: true),
+              Te('S/${_precioNeto()}', bold: true),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Te('I.G.V. ${reg['igv']}%:',bold:true),
-              Te('S/${_descuentoDelIgv()}',bold:true),
+              Te('I.G.V. ${reg['igv']}%:', bold: true),
+              Te('S/${_descuentoDelIgv()}', bold: true),
             ],
           ),
-          SimpleLine(height:3,color:Colors.black),
+          SimpleLine(height: 3, color: Colors.black),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Te('TOTAL:',size:16,bold:true),
-              Expanded(child:const SizedBox()),
-              Te('S/ ${_getTotal()}',size:16,bold:true),
+              Te('TOTAL:', size: 16, bold: true),
+              Expanded(child: const SizedBox()),
+              Te('S/ ${_getTotal()}', size: 16, bold: true),
             ],
           ),
-          if(reg['vuelto']!=0 && reg['vuelto']!=null)Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Te('Vuelto:',size:16,bold:true),
-              Expanded(child:const SizedBox()),
-              Te('S/${reg['vuelto'].toStringAsFixed(2)}',size:16,bold:true),
-            ],
-          ),
+          if (reg['vuelto'] != 0 && reg['vuelto'] != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Te('Vuelto:', size: 16, bold: true),
+                Expanded(child: const SizedBox()),
+                Te(
+                  'S/${reg['vuelto'].toStringAsFixed(2)}',
+                  size: 16,
+                  bold: true,
+                ),
+              ],
+            ),
           sep,
           SizedBox(
             width: double.infinity,
@@ -144,9 +178,11 @@ class PrintableDocBoleta extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Te(Logic.turnPriceToWords(double.parse(_getTotal()))),
-                ...reg['metodosDePago'].map<Widget>((mp)=>Te(
-                  '${mp['tipo'].toUpperCase()}: ${mp['divisa']=='PEN'?'S/':'\$'}${mp['monto'].toStringAsFixed(2)}',
-                )),
+                ...reg['metodosDePago'].map<Widget>(
+                  (mp) => Te(
+                    '${mp['tipo'].toUpperCase()}: ${mp['divisa'] == 'PEN' ? 'S/' : '\$'}${mp['monto'].toStringAsFixed(2)}',
+                  ),
+                ),
               ],
             ),
           ),
@@ -154,17 +190,21 @@ class PrintableDocBoleta extends StatelessWidget {
             width: 120,
             height: 120,
             child: QrImageView(
-              data: '${_getPrefijoDelID(reg)}${reg['id']}, ${reg['cliente']['nombre']}, ${getDateString(reg['fecha'],'day/month/year - hour:minute')}',
+              data:
+                  '${_getPrefijoDelID(reg)}${reg['id']}, ${reg['cliente']['nombre']}, ${getDateString(reg['fecha'], 'day/month/year - hour:minute')}',
             ),
           ),
-          SimpleLine(height:3,color:Colors.black),
+          SimpleLine(height: 3, color: Colors.black),
           Te('Tipo de operación: ${reg['tipoDeOperacion']}'),
           Te('REPRESENTACIÓN IMPRESA DE BOLETA ELECTRÓNICA'),
-          SimpleLine(height:3,color:Colors.black),
+          SimpleLine(height: 3, color: Colors.black),
           Te('Consulte su documento en:'),
           Te('www.comprobante.trinetsoft.com'),
           sep,
-          Image.asset('assets/logo for documents.png',width:width(context)*0.36),
+          Image.asset(
+            'assets/logo for documents.png',
+            width: width(context) * 0.36,
+          ),
         ],
       ),
     );

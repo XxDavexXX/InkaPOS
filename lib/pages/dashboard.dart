@@ -290,7 +290,7 @@ class _DashboardState extends State<Dashboard> with RouteAware {
 
     await box.add({
       'codigo': 'C001',
-      'nombre': 'Caja Principal',
+      'nombre': 'CAJA 1',
       'ubicacion': 'Mostrador A',
       'serieBoleta': 'B001',
       'serieFactura': 'F001',
@@ -298,7 +298,7 @@ class _DashboardState extends State<Dashboard> with RouteAware {
     });
     await box.add({
       'codigo': 'C002',
-      'nombre': 'Caja Secundaria',
+      'nombre': 'CAJA 2',
       'ubicacion': 'Mostrador B',
       'serieBoleta': 'B002',
       'serieFactura': 'F002',
@@ -306,7 +306,7 @@ class _DashboardState extends State<Dashboard> with RouteAware {
     });
     await box.add({
       'codigo': 'C003',
-      'nombre': 'Caja Delivery',
+      'nombre': 'CAJA 3',
       'ubicacion': 'Zona de envíos',
       'serieBoleta': 'B003',
       'serieFactura': 'F003',
@@ -314,7 +314,7 @@ class _DashboardState extends State<Dashboard> with RouteAware {
     });
     await box.add({
       'codigo': 'C004',
-      'nombre': 'Caja Auxiliar',
+      'nombre': 'CAJA 4',
       'ubicacion': 'Almacén',
       'serieBoleta': 'B004',
       'serieFactura': 'F004',

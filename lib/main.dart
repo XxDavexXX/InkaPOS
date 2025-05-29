@@ -41,10 +41,43 @@ void main() async {
   //Si no hay usuarios, crear el usuario admin por defecto
   Box usuarios = Hive.box<Map>('Usuarios');
   if (usuarios.keys.toList().isEmpty) {
-    Map adminUser = {'usuario': 'admin', 'contraseña': '123', 'activo': true};
-    dynamic id = await usuarios.add(adminUser);
-    await usuarios.put(id, {'id': id, ...adminUser});
+    List<Map<String, dynamic>> nuevosUsuarios = [
+      {
+        'usuario': 'admin',
+        'contraseña': '123',
+        'activo': true,
+        'nombres': 'Admin',
+        'apellidos': 'Sistema',
+      },
+      {
+        'usuario': 'dave',
+        'contraseña': '123',
+        'activo': true,
+        'nombres': 'Dave',
+        'apellidos': 'Torres',
+      },
+      {
+        'usuario': 'manuel',
+        'contraseña': '123',
+        'activo': true,
+        'nombres': 'Manuel',
+        'apellidos': 'Gonzales',
+      },
+      {
+        'usuario': 'erick',
+        'contraseña': '123',
+        'activo': true,
+        'nombres': 'Erick',
+        'apellidos': 'Quispe',
+      },
+    ];
+
+    for (var user in nuevosUsuarios) {
+      dynamic id = await usuarios.add(user);
+      await usuarios.put(id, {'id': id, ...user});
+    }
   }
+
   //Crear los primeros métodos de pago
   Box metodosDePago = Hive.box<Map>('Metodos de pago');
   if (appJustInstalled) {
