@@ -19,18 +19,18 @@ Box egresos = Hive.box<Map>('Egresos');
 Box correlativos = Hive.box<Map>('Correlativos');
 Box cajas = Hive.box<Map>('Cajas');
 
-
-
 Map? getCaja(int id) => cajas.get(id);
 List<Map> getAllCajas() {
   return cajas.values.map((e) => Map<String, dynamic>.from(e)).toList();
 }
+
 Future<int> addCaja(Map newOne) async {
   int id = await cajas.add(newOne);
   Map map = {...newOne, 'id': id};
   await cajas.put(id, map);
   return id;
 }
+
 Future setCaja(Map newOne) async => await cajas.put(newOne['id'], newOne);
 Future deleteCaja(int id) async => await cajas.delete(id);
 Future deleteAllCajas() async => await cajas.clear();
@@ -39,44 +39,54 @@ Future setCajaActual(Map? caja) async {
   if (caja == null) return await setts.delete('cajaActual');
   await setts.put('cajaActual', caja);
 }
+
 Map? getCajaActual() => setts.get('cajaActual');
 
 //Usuario logueado
-Map? getUser()=>setts.get('user');
-Future setUser(Map? user)async{
-	if(user==null){await setts.delete('user');}
-	else{await setts.put('user',user);}
+Map? getUser() => setts.get('user');
+Future setUser(Map? user) async {
+  if (user == null) {
+    await setts.delete('user');
+  } else {
+    await setts.put('user', user);
+  }
 }
 
 //Turnos
 // {id: String (millisecondsSinceEpoch),precioDeCompra: double,precioDeVenta: double,fondoInicialSoles: double,fondoInicialDolares: double,usuarioID: int}
-Map? getTurnoActual()=>setts.get('turnoActual');
-Future setTurnoActual(Map newTurn)async=>await setts.put('turnoActual',newTurn);
-Future cerrarTurnoActual()async{
-	Map currentTurn = getTurnoActual()!;
-	currentTurn['id'] = currentTurn['id'].toString();
-  currentTurn['fechaCierre'] = DateTime.now().toIso8601String();
-	await addTurno(currentTurn);
-	await setts.delete('turnoActual');
-}
+Map? getTurnoActual() => setts.get('turnoActual');
+Future setTurnoActual(Map newTurn) async =>
+    await setts.put('turnoActual', newTurn);
 
+Future<void> cerrarTurnoActual() async {
+  final currentTurn = getTurnoActual();
+  if (currentTurn == null) return; // 👈 Protege si ya fue cerrado
+
+  currentTurn['id'] = currentTurn['id'].toString();
+  currentTurn['fechaCierre'] = DateTime.now().toIso8601String();
+  await addTurno(currentTurn);
+  await setts.delete('turnoActual');
+}
 
 //Turnos
 // {id: String (millisecondsSinceEpoch), precioDeCompra: double, precioDeVenta: double, fondoInicialSoles: double, fondoInicialDolares: double, usuario: int (user ID)}
-Map? getTurno(String id)=>turnos.get(id);
-List<Map> getAllTurnos(){
-	List<Map> list = [];
-	turnos.keys.toList().forEach((id)=>list.add(getTurno(id)!));
-	return list;
+Map? getTurno(String id) => turnos.get(id);
+List<Map> getAllTurnos() {
+  List<Map> list = [];
+  turnos.keys.toList().forEach((id) => list.add(getTurno(id)!));
+  return list;
 }
-Future addTurno(Map newOne)async=>await turnos.put(newOne['id'].toString(),newOne);
-Future setTurno(Map newOne)async=>await turnos.put(newOne['id'].toString(),newOne);
-Future deleteTurno(String id)async=>await turnos.delete(id);
-Future deleteAllTurnos()async=>await turnos.clear();
+
+Future addTurno(Map newOne) async =>
+    await turnos.put(newOne['id'].toString(), newOne);
+Future setTurno(Map newOne) async =>
+    await turnos.put(newOne['id'].toString(), newOne);
+Future deleteTurno(String id) async => await turnos.delete(id);
+Future deleteAllTurnos() async => await turnos.clear();
 
 // Cart
 // E.g. the same as product but with the 'cantidad' field as an integer
-Map? getCartItem(int itemID)=>cart.get(itemID);
+Map? getCartItem(int itemID) => cart.get(itemID);
 List<Map> getCart() {
   return cart.values.map((e) => Map<String, dynamic>.from(e)).toList();
 }
@@ -94,12 +104,11 @@ Future<int> addCartItem(Map newOne) async {
     ...newOne,
     'id': cartID, // ID del carrito (clave Hive)
     'productID': newOne['id'], // ID real del producto
-    'cantidad': 1
+    'cantidad': 1,
   };
   await cart.put(cartID, map);
   return cartID;
 }
-
 
 // Future<int> addCartItem(Map newOne)async{
 // 	int id = await cart.add(newOne);
@@ -107,10 +116,10 @@ Future<int> addCartItem(Map newOne) async {
 // 	await cart.put(id,map);
 // 	return id;
 // }
-Future setCartItem(Map newOne)async=>await cart.put(newOne['id'],newOne);
-Future deleteCartItem(int id)async=>await cart.delete(id);
-Future deleteAllCartItem()async=>await cart.clear();
- 
+Future setCartItem(Map newOne) async => await cart.put(newOne['id'], newOne);
+Future deleteCartItem(int id) async => await cart.delete(id);
+Future deleteAllCartItem() async => await cart.clear();
+
 // String getSerieActiva() {
 //   // Deberías traer esto desde Hive o un helper donde almacenas las impresoras activas
 //   // Aquí es simulado:
@@ -130,8 +139,6 @@ String getSerieActiva(String tipo) {
   return 'T001';
 }
 
-
-
 Future<String> generarNumeroDeComprobante({
   required String tipo, // 'boleta' o 'factura'
 }) async {
@@ -139,7 +146,10 @@ Future<String> generarNumeroDeComprobante({
   final key = '$tipo-$serie';
 
   Map? actual = correlativos.get(key);
-  int ultimo = actual != null && actual.containsKey('correlativo') ? actual['correlativo'] : 0;
+  int ultimo =
+      actual != null && actual.containsKey('correlativo')
+          ? actual['correlativo']
+          : 0;
   final nuevo = ultimo + 1;
 
   await correlativos.put(key, {
@@ -150,7 +160,6 @@ Future<String> generarNumeroDeComprobante({
   final correlativoStr = nuevo.toString().padLeft(8, '0');
   return '$serie-$correlativoStr';
 }
-
 
 Future<void> resetCorrelativos() async {
   final keys = correlativos.keys.toList();
@@ -177,10 +186,11 @@ combo: bool,
 flexible: bool,
 cantidad: int,
 */
-Map? getProduct(int productID)=>products.get(productID);
+Map? getProduct(int productID) => products.get(productID);
 List<Map> getProducts() {
   return products.values.map((e) => Map<String, dynamic>.from(e)).toList();
 }
+
 // List<Map> getProducts(){
 // 	List<Map> list = [];
 // 	products.keys.toList().forEach((prodID){
@@ -188,206 +198,242 @@ List<Map> getProducts() {
 // 	});
 // 	return list;
 // }
-Future<int> addProduct(Map newOne)async{
-	int id = await products.add(newOne);
-	Map map = {...newOne,'id':id};
-	await products.put(id,map);
-	return id;
+Future<int> addProduct(Map newOne) async {
+  int id = await products.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await products.put(id, map);
+  return id;
 }
-Future setProduct(Map newOne)async=>await products.put(newOne['id'],newOne);
-Future deleteProduct(int id)async=>await products.delete(id);
-Future deleteAllProducts()async=>await products.clear();
+
+Future setProduct(Map newOne) async => await products.put(newOne['id'], newOne);
+Future deleteProduct(int id) async => await products.delete(id);
+Future deleteAllProducts() async => await products.clear();
 
 // Clientes
 // E.g. {'id':111,'nombre':'Manuel Gomez','documento':'DNI','nroDeDocumento':'64826459','direccion':'Address 123','correo':'manu23g@hotmail.com','telefono':'9993472446'},
-Map? getClient(int id)=>clients.get(id);
-List<Map> getAllClients(){
-	List<Map> list = [];
-	clients.keys.toList().forEach((id)=>list.add(getClient(id)!));
-	return list;
+Map? getClient(int id) => clients.get(id);
+List<Map> getAllClients() {
+  List<Map> list = [];
+  clients.keys.toList().forEach((id) => list.add(getClient(id)!));
+  return list;
 }
-Future<int> addClient(Map newOne)async{
-	int id = await clients.add(newOne);
-	Map map = {...newOne,'id':id};
-	await clients.put(id,map);
-	return id;
+
+Future<int> addClient(Map newOne) async {
+  int id = await clients.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await clients.put(id, map);
+  return id;
 }
-Future updateClient(Map newOne)async=>await clients.put(newOne['id'],newOne);
-Future deleteClient(int id)async=>await clients.delete(id);
-Future deleteAllClients()async=>await clients.clear();
+
+Future updateClient(Map newOne) async =>
+    await clients.put(newOne['id'], newOne);
+Future deleteClient(int id) async => await clients.delete(id);
+Future deleteAllClients() async => await clients.clear();
 
 //Usuarios
 // E.g. {'usuario':nombre,'contraseña':contrasena,'grupo':grupo as Map,'activo':activo as bool}
-Map? getUsuario(int id)=>usuarios.get(id);
-List<Map> getAllUsuarios(){
-	List<Map> list = [];
-	usuarios.keys.toList().forEach((id)=>list.add(getUsuario(id)!));
-	return list;
+Map? getUsuario(int id) => usuarios.get(id);
+List<Map> getAllUsuarios() {
+  List<Map> list = [];
+  usuarios.keys.toList().forEach((id) => list.add(getUsuario(id)!));
+  return list;
 }
-Future<int> addUsuario(Map newOne)async{
-	int id = await usuarios.add(newOne);
-	Map map = {...newOne,'id':id};
-	await usuarios.put(id,map);
-	return id;
+
+Future<int> addUsuario(Map newOne) async {
+  int id = await usuarios.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await usuarios.put(id, map);
+  return id;
 }
-Future setUsuario(Map newOne)async=>await usuarios.put(newOne['id'],newOne);
-Future deleteUsuario(int id)async=>await usuarios.delete(id);
-Future deleteAllUsuarios()async=>await usuarios.clear();
+
+Future setUsuario(Map newOne) async => await usuarios.put(newOne['id'], newOne);
+Future deleteUsuario(int id) async => await usuarios.delete(id);
+Future deleteAllUsuarios() async => await usuarios.clear();
 
 //Métodos de pago
 // E.g.: {abreviatura:'S/','nombre':'Efectivo soles','tipo':'efectivo','divisa':'soles'},
 // tipo puede ser 3 valores: electrónico, efectivo y tarjeta
-Map? getMetodoDePago(int id)=>metodosDePago.get(id);
-List<Map> getAllMetodosDePago(){
-	List<Map> list = [];
-	metodosDePago.keys.toList().forEach((id)=>list.add(getMetodoDePago(id)!));
-	return list;
+Map? getMetodoDePago(int id) => metodosDePago.get(id);
+List<Map> getAllMetodosDePago() {
+  List<Map> list = [];
+  metodosDePago.keys.toList().forEach((id) => list.add(getMetodoDePago(id)!));
+  return list;
 }
-Future<int> addMetodoDePago(Map newOne)async{
-	int id = await metodosDePago.add(newOne);
-	Map map = {...newOne,'id':id};
-	await metodosDePago.put(id,map);
-	return id;
+
+Future<int> addMetodoDePago(Map newOne) async {
+  int id = await metodosDePago.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await metodosDePago.put(id, map);
+  return id;
 }
-Future setMetodoDePago(Map newOne)async=>await metodosDePago.put(newOne['id'],newOne);
-Future deleteMetodoDePago(int id)async=>await metodosDePago.delete(id);
-Future deleteAllMetodosDePagos()async=>await metodosDePago.clear();
+
+Future setMetodoDePago(Map newOne) async =>
+    await metodosDePago.put(newOne['id'], newOne);
+Future deleteMetodoDePago(int id) async => await metodosDePago.delete(id);
+Future deleteAllMetodosDePagos() async => await metodosDePago.clear();
 
 //Grupo de usuarios
 //E.g.: {'id':'111','nombre':'ADMINISTRADOR','activo':true}
-Map? getGrupoDeUsuarios(int id)=>grupoDeUsuarios.get(id);
-List<Map> getAllGruposDeUsuarios(){
-	List<Map> list = [];
-	grupoDeUsuarios.keys.toList().forEach((id)=>list.add(getGrupoDeUsuarios(id)!));
-	return list;
+Map? getGrupoDeUsuarios(int id) => grupoDeUsuarios.get(id);
+List<Map> getAllGruposDeUsuarios() {
+  List<Map> list = [];
+  grupoDeUsuarios.keys.toList().forEach(
+    (id) => list.add(getGrupoDeUsuarios(id)!),
+  );
+  return list;
 }
-Future<int> addGrupoDeUsuarios(Map newOne)async{
-	int id = await grupoDeUsuarios.add(newOne);
-	Map map = {...newOne,'id':id};
-	await grupoDeUsuarios.put(id,map);
-	return id;
+
+Future<int> addGrupoDeUsuarios(Map newOne) async {
+  int id = await grupoDeUsuarios.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await grupoDeUsuarios.put(id, map);
+  return id;
 }
-Future setGrupoDeUsuarios(Map newOne)async=>await grupoDeUsuarios.put(newOne['id'],newOne);
-Future deleteGrupoDeUsuarios(int id)async=>await grupoDeUsuarios.delete(id);
-Future deleteAllGruposDeUsuarios()async=>await grupoDeUsuarios.clear();
+
+Future setGrupoDeUsuarios(Map newOne) async =>
+    await grupoDeUsuarios.put(newOne['id'], newOne);
+Future deleteGrupoDeUsuarios(int id) async => await grupoDeUsuarios.delete(id);
+Future deleteAllGruposDeUsuarios() async => await grupoDeUsuarios.clear();
 
 //Registro de ventas
 //TODO: Add here in a comment the final structure of a register
-Map? getRegistroDeVenta(int id)=>registroDeVentas.get(id);
-List<Map> getAllRegistrosDeVenta(){
-	List<Map> list = [];
-	registroDeVentas.keys.toList().forEach((id)=>list.add(getRegistroDeVenta(id)!));
-	return list;
+Map? getRegistroDeVenta(int id) => registroDeVentas.get(id);
+List<Map> getAllRegistrosDeVenta() {
+  List<Map> list = [];
+  registroDeVentas.keys.toList().forEach(
+    (id) => list.add(getRegistroDeVenta(id)!),
+  );
+  return list;
 }
-Future<int> addRegistroDeVenta(Map newOne)async{
-	int id = await registroDeVentas.add(newOne);
-	Map map = {...newOne,'id':id};
-	await registroDeVentas.put(id,map);
-	return id;
+
+Future<int> addRegistroDeVenta(Map newOne) async {
+  int id = await registroDeVentas.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await registroDeVentas.put(id, map);
+  return id;
 }
-Future setRegistroDeVenta(Map newOne)async=>await registroDeVentas.put(newOne['id'],newOne);
-Future deleteRegistroDeVenta(int id)async=>await registroDeVentas.delete(id);
-Future deleteAllRegistrosDeVenta()async=>await registroDeVentas.clear();
+
+Future setRegistroDeVenta(Map newOne) async =>
+    await registroDeVentas.put(newOne['id'], newOne);
+Future deleteRegistroDeVenta(int id) async => await registroDeVentas.delete(id);
+Future deleteAllRegistrosDeVenta() async => await registroDeVentas.clear();
 
 // Pedidos borrados
 // id: int, turno: int, fecha: int, motivo: String, productos: List<Map>, cliente: {'nombre': String}, vendedor: {'nombre': String}
-Map? getPedidoBorrado(int id)=>pedidosBorrados.get(id);
-List<Map> getAllPedidosBorrados(){
-	List<Map> list = [];
-	pedidosBorrados.keys.toList().forEach((id)=>list.add(getPedidoBorrado(id)!));
-	return list;
+Map? getPedidoBorrado(int id) => pedidosBorrados.get(id);
+List<Map> getAllPedidosBorrados() {
+  List<Map> list = [];
+  pedidosBorrados.keys.toList().forEach(
+    (id) => list.add(getPedidoBorrado(id)!),
+  );
+  return list;
 }
-Future<int> addPedidoBorrado(Map newOne)async{
-	int id = await pedidosBorrados.add(newOne);
-	Map map = {...newOne,'id':id};
-	await pedidosBorrados.put(id,map);
-	return id;
+
+Future<int> addPedidoBorrado(Map newOne) async {
+  int id = await pedidosBorrados.add(newOne);
+  Map map = {...newOne, 'id': id};
+  await pedidosBorrados.put(id, map);
+  return id;
 }
-Future setPedidoBorrado(Map newOne)async=>await pedidosBorrados.put(newOne['id'],newOne);
-Future deletePedidoBorrado(int id)async=>await pedidosBorrados.delete(id);
-Future deleteAllPedidosBorrados()async=>await pedidosBorrados.clear();
+
+Future setPedidoBorrado(Map newOne) async =>
+    await pedidosBorrados.put(newOne['id'], newOne);
+Future deletePedidoBorrado(int id) async => await pedidosBorrados.delete(id);
+Future deleteAllPedidosBorrados() async => await pedidosBorrados.clear();
 
 // Grupos
-Map? getGrupo(int id)=>grupos.get(id);
-List<Map> getAllGrupos(){
+Map? getGrupo(int id) => grupos.get(id);
+List<Map> getAllGrupos() {
   List<Map> list = [];
-  grupos.keys.toList().forEach((id)=>list.add(getGrupo(id)!));
+  grupos.keys.toList().forEach((id) => list.add(getGrupo(id)!));
   return list;
 }
-Future<int> addGrupo(Map newOne)async{
+
+Future<int> addGrupo(Map newOne) async {
   int id = await grupos.add(newOne);
-  Map map = {'id':id,...newOne};
-  await grupos.put(id,map);
+  Map map = {'id': id, ...newOne};
+  await grupos.put(id, map);
   return id;
 }
-Future setGrupo(Map newOne)async=>await grupos.put(newOne['id'],newOne);
-Future deleteGrupo(int id)async=>await grupos.delete(id);
-Future deleteAllGrupos()async=>await grupos.clear();
+
+Future setGrupo(Map newOne) async => await grupos.put(newOne['id'], newOne);
+Future deleteGrupo(int id) async => await grupos.delete(id);
+Future deleteAllGrupos() async => await grupos.clear();
 
 // Observaciones
-Map? getObservacion(int id)=>observaciones.get(id);
-List<Map> getAllObservaciones(){
+Map? getObservacion(int id) => observaciones.get(id);
+List<Map> getAllObservaciones() {
   List<Map> list = [];
-  observaciones.keys.toList().forEach((id)=>list.add(getObservacion(id)!));
+  observaciones.keys.toList().forEach((id) => list.add(getObservacion(id)!));
   return list;
 }
-Future<int> addObservacion(Map newOne)async{
+
+Future<int> addObservacion(Map newOne) async {
   int id = await observaciones.add(newOne);
-  Map map = {'id':id,...newOne};
-  await observaciones.put(id,map);
+  Map map = {'id': id, ...newOne};
+  await observaciones.put(id, map);
   return id;
 }
-Future setObservacion(Map newOne)async=>await observaciones.put(newOne['id'],newOne);
-Future deleteObservacion(int id)async=>await observaciones.delete(id);
-Future deleteAllObservaciones()async=>await observaciones.clear();
+
+Future setObservacion(Map newOne) async =>
+    await observaciones.put(newOne['id'], newOne);
+Future deleteObservacion(int id) async => await observaciones.delete(id);
+Future deleteAllObservaciones() async => await observaciones.clear();
 
 // Subgrupos
-Map? getSubgrupo(int id)=>subgrupos.get(id);
-List<Map> getAllSubgrupos(){
+Map? getSubgrupo(int id) => subgrupos.get(id);
+List<Map> getAllSubgrupos() {
   List<Map> list = [];
-  subgrupos.keys.toList().forEach((id)=>list.add(getSubgrupo(id)!));
+  subgrupos.keys.toList().forEach((id) => list.add(getSubgrupo(id)!));
   return list;
 }
-Future<int> addSubgrupo(Map newOne)async{
+
+Future<int> addSubgrupo(Map newOne) async {
   int id = await subgrupos.add(newOne);
-  Map map = {'id':id,...newOne};
-  await subgrupos.put(id,map);
+  Map map = {'id': id, ...newOne};
+  await subgrupos.put(id, map);
   return id;
 }
-Future setSubgrupo(Map newOne)async=>await subgrupos.put(newOne['id'],newOne);
-Future deleteSubgrupo(int id)async=>await subgrupos.delete(id);
-Future deleteAllSubgrupos()async=>await subgrupos.clear();
+
+Future setSubgrupo(Map newOne) async =>
+    await subgrupos.put(newOne['id'], newOne);
+Future deleteSubgrupo(int id) async => await subgrupos.delete(id);
+Future deleteAllSubgrupos() async => await subgrupos.clear();
 
 // Áreas
-Map? getArea(int id)=>areas.get(id);
-List<Map> getAllAreas(){
+Map? getArea(int id) => areas.get(id);
+List<Map> getAllAreas() {
   List<Map> list = [];
-  areas.keys.toList().forEach((id)=>list.add(getArea(id)!));
+  areas.keys.toList().forEach((id) => list.add(getArea(id)!));
   return list;
 }
-Future<int> addArea(Map newOne)async{
+
+Future<int> addArea(Map newOne) async {
   int id = await areas.add(newOne);
-  Map map = {'id':id,...newOne};
-  await areas.put(id,map);
+  Map map = {'id': id, ...newOne};
+  await areas.put(id, map);
   return id;
 }
-Future setArea(Map newOne)async=>await areas.put(newOne['id'],newOne);
-Future deleteArea(int id)async=>await areas.delete(id);
-Future deleteAllAreas()async=>await areas.clear();
+
+Future setArea(Map newOne) async => await areas.put(newOne['id'], newOne);
+Future deleteArea(int id) async => await areas.delete(id);
+Future deleteAllAreas() async => await areas.clear();
 
 // Egresos
-Map? getEgreso(int id)=>egresos.get(id);
-List<Map> getAllEgresos(){
+Map? getEgreso(int id) => egresos.get(id);
+List<Map> getAllEgresos() {
   List<Map> list = [];
-  egresos.keys.toList().forEach((id)=>list.add(getEgreso(id)!));
+  egresos.keys.toList().forEach((id) => list.add(getEgreso(id)!));
   return list;
 }
-Future<int> addEgreso(Map newOne)async{
+
+Future<int> addEgreso(Map newOne) async {
   int id = await egresos.add(newOne);
-  Map map = {'id':id,...newOne};
-  await egresos.put(id,map);
+  Map map = {'id': id, ...newOne};
+  await egresos.put(id, map);
   return id;
 }
-Future setEgreso(Map newOne)async=>await egresos.put(newOne['id'],newOne);
-Future deleteEgreso(int id)async=>await egresos.delete(id);
-Future deleteAllEgresos()async=>await egresos.clear();
+
+Future setEgreso(Map newOne) async => await egresos.put(newOne['id'], newOne);
+Future deleteEgreso(int id) async => await egresos.delete(id);
+Future deleteAllEgresos() async => await egresos.clear();
