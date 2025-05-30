@@ -81,8 +81,6 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
       doLoad(context);
       try {
         int userID = getUser()!['id'];
-        //Sacando los datos de los registro del turno
-        // List<Map> registros=getAllRegistrosDeVenta().where((reg)=>reg['turno']==turnoActual['id']).toList();
         List<Map> registros =
             getAllRegistrosDeVenta()
                 .where(
@@ -93,48 +91,72 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
                 .toList();
         double ventasEfectivoSoles = 0.0;
         double ventasEfectivoDolares = 0.0;
-        double ventasTarjetasSoles = 0.0;
-        double ventasTarjetasDolares = 0.0;
-        double ventasElectronicosSoles = 0.0;
-        double ventasElectronicosDolares = 0.0;
+        double ventasTarjetasMatercardSoles = 0.0;
+        double ventasTarjetasMatercardDolares = 0.0;
+        double ventasTarjetasVisaSoles = 0.0;
+        double ventasTarjetasVisaDolares = 0.0;
+        double ventasYapeSoles = 0.0;
+        double ventasYapeDolares = 0.0;
+        double ventasPlinSoles = 0.0;
+        double ventasPlinDolares = 0.0;
         registros.forEach((Map reg) {
-          reg['metodosDePago'].forEach((mp) {
-            // Metodo e.g. {abreviatura:'S/',nombre:'Soles',tipo:'efectivo',divisa:'soles',monto:10.0},
-            if (mp['divisa'] == 'PEN') {
-              if (mp['tipo'] == 'efectivo') ventasEfectivoSoles += mp['monto'];
-              if (mp['tipo'] == 'tarjeta') ventasTarjetasSoles += mp['monto'];
-              if (mp['tipo'] == 'electrónico')
-                ventasElectronicosSoles += mp['monto'];
+        final metodos = reg['metodosDePago'];
+        if (metodos is List) {
+          for (var mp in metodos) {
+            if (mp is! Map) continue;
+            print('Método de pago detectado: $mp');
+
+            final tipo = mp['tipo'];
+            final divisa = mp['divisa'];
+            final monto = (mp['monto'] ?? 0.0).toDouble();
+
+            if (divisa == 'PEN') {
+              if (tipo == 'efectivo') ventasEfectivoSoles += monto;
+              if (tipo == 'visa') ventasTarjetasVisaSoles += monto;
+              if (tipo == 'mastercard') ventasTarjetasMatercardSoles += monto;
+              if (tipo == 'plin') ventasPlinSoles += monto;
+              if (tipo == 'yape') ventasYapeSoles += monto;
+            } else if (divisa == 'USD') {
+              if (tipo == 'efectivo') ventasEfectivoDolares += monto;
+              if (tipo == 'visa') ventasTarjetasVisaDolares += monto;
+              if (tipo == 'mastercard') ventasTarjetasMatercardDolares += monto;
+              if (tipo == 'plin') ventasPlinDolares += monto;
+              if (tipo == 'yape') ventasYapeDolares += monto;
             }
-            if (mp['divisa'] == 'USD') {
-              if (mp['tipo'] == 'efectivo')
-                ventasEfectivoDolares += mp['monto'];
-              if (mp['tipo'] == 'tarjeta') ventasTarjetasDolares += mp['monto'];
-              if (mp['tipo'] == 'electrónico')
-                ventasElectronicosDolares += mp['monto'];
-            }
-          });
-        });
+          }
+        }
+      });
+
         List<Map> tableData = [
           {
-            'dato': 'Fondo inicial',
+            'dato': 'Fondo Inicial',
             'soles': turnoActual!['fondoInicialSoles'],
             'dolares': turnoActual!['fondoInicialDolares'],
           },
           {
-            'dato': 'Ventas efectivo',
+            'dato': 'Ventas Efectivo',
             'soles': ventasEfectivoSoles,
             'dolares': ventasEfectivoDolares,
           },
           {
-            'dato': 'Ventas tarjetas',
-            'soles': ventasTarjetasSoles,
-            'dolares': ventasTarjetasDolares,
+            'dato': 'Ventas Tarjetas Visa',
+            'soles': ventasTarjetasVisaSoles,
+            'dolares': ventasTarjetasVisaDolares,
           },
           {
-            'dato': 'Pagos electrónicos',
-            'soles': ventasElectronicosSoles,
-            'dolares': ventasElectronicosDolares,
+            'dato': 'Ventas Tarjetas Mastercard',
+            'soles': ventasTarjetasMatercardSoles,
+            'dolares': ventasTarjetasMatercardDolares,
+          },
+          {
+            'dato': 'Ventas Yape',
+            'soles': ventasYapeSoles,
+            'dolares': ventasYapeDolares,
+          },
+          {
+            'dato': 'Ventas Plin',
+            'soles': ventasPlinSoles,
+            'dolares': ventasPlinDolares,
           },
           //TODO: Egreso es lo que el usuario sacó en efectivo del monto de las ventas en efectivo. Esto se registra en la pantalla de egresos.dart
           {'dato': 'Egresos', 'soles': '0.00', 'dolares': '0.00'},

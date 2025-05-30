@@ -139,6 +139,26 @@ String getSerieActiva(String tipo) {
   return 'T001';
 }
 
+Future<String> generarCorrelativoDeComanda() async {
+  const key = 'comanda-general';
+  Map? actual = correlativos.get(key);
+
+  int ultimo = actual != null && actual.containsKey('correlativo')
+      ? actual['correlativo']
+      : 0;
+
+  final nuevo = ultimo + 1;
+
+  await correlativos.put(key, {
+    'correlativo': nuevo,
+    'updatedAt': DateTime.now().millisecondsSinceEpoch,
+  });
+
+  return nuevo.toString().padLeft(8, '0');
+}
+
+
+
 Future<String> generarNumeroDeComprobante({
   required String tipo, // 'boleta' o 'factura'
 }) async {

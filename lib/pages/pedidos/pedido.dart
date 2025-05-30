@@ -6,12 +6,14 @@ import '../../widgets/dialog_title.dart';
 import '../../widgets/simple_white_box.dart';
 import '../../widgets/my_icon.dart';
 import '../../widgets/bottom_button.dart';
+import '../../widgets/bottom_button_comanda.dart';
 import '../../widgets/button.dart';
 import '../../widgets/input.dart';
 import '../../widgets/div.dart';
 import '../../widgets/p.dart';
 import '../total_a_pagar.dart';
 import '../comprobantes/precuenta.dart';
+import '../comprobantes/comanda.dart';
 import '../clientes/clientes.dart';
 
 class Pedido extends StatefulWidget {
@@ -25,6 +27,10 @@ class Pedido extends StatefulWidget {
 class _PedidoState extends State<Pedido> {
   List<Map> _items = [];
   Map? _cliente;
+  Map? _ultimaComandaEnviada;
+  bool _botonEnviarActivo = true;
+
+
 
   Map _getData({required String tipo}) {
     //TODO: Mock data
@@ -60,6 +66,39 @@ class _PedidoState extends State<Pedido> {
     };
   }
 
+  List<Map> _getProductosAnulados() {
+    if (_ultimaComandaEnviada == null) return [];
+
+    List<Map> anteriores = List<Map>.from(_ultimaComandaEnviada!['productos']);
+    List<Map> actuales = List<Map>.from(_items);
+
+    Map<int, Map> anterioresPorID = {
+      for (var prod in anteriores) prod['id']: prod
+    };
+
+    List<Map> anulados = [];
+
+    for (var anterior in anteriores) {
+      var actual = actuales.firstWhere(
+        (p) => p['id'] == anterior['id'],
+        orElse: () => {},
+      );
+
+      if (actual.isEmpty) {
+        // Producto eliminado totalmente
+        anulados.add({...anterior});
+      } else if (actual['cantidad'] < anterior['cantidad']) {
+        // Producto reducido
+        Map anulado = {...anterior};
+        anulado['cantidad'] = anterior['cantidad'] - actual['cantidad'];
+        anulados.add(anulado);
+      }
+    }
+
+    return anulados;
+  }
+
+
   String _getAverageIGV() {
     //Usually all the items have the same IGV, but in case they don't, get the average
     bool allItemsHaveTheSameIGV =
@@ -70,6 +109,14 @@ class _PedidoState extends State<Pedido> {
     double igv = sum / _items.length;
     return igv.toStringAsFixed(2);
   }
+
+  void _refrescarPedido() {
+    setState(() {
+      _items = getCart();
+    });
+    _verificarCambiosParaAnulacion();
+  }
+
 
   void _addUnit(Map item) async {
     Map map = {...item};
@@ -83,6 +130,7 @@ class _PedidoState extends State<Pedido> {
     } finally {
       Navigator.pop(context);
     }
+    _verificarCambiosParaAnulacion();
   }
 
   void _removeUnit(Map item) async {
@@ -111,12 +159,25 @@ class _PedidoState extends State<Pedido> {
         Navigator.pop(context);
       }
     }
+    _verificarCambiosParaAnulacion();
   }
 
   void _removeWholeItem(Map item) => loadThis(context, () async {
     await deleteCartItem(item['id']);
     setState(() => _items.remove(item));
+    _verificarCambiosParaAnulacion();
   });
+
+  void _verificarCambiosParaAnulacion() {
+    if (_ultimaComandaEnviada == null) {
+      setState(() => _botonEnviarActivo = true);
+      return;
+    }
+
+    List<Map> anulados = _getProductosAnulados();
+    setState(() => _botonEnviarActivo = anulados.isNotEmpty);
+  }
+
 
   void _editUnits(Map item) async {
     String? newUnitsString = await prompt(
@@ -142,6 +203,7 @@ class _PedidoState extends State<Pedido> {
     } finally {
       Navigator.pop(context);
     }
+    _verificarCambiosParaAnulacion();
   }
 
   void _deleteOrder() async {
@@ -338,6 +400,29 @@ class _PedidoState extends State<Pedido> {
   void _precuenta() async {
     await goTo(context, Precuenta(_getData(tipo: 'precuenta')));
   }
+
+  void _comanda() async {
+    List<Map> anulados = _getProductosAnulados();
+
+    Map datos = _getData(tipo: 'comanda');
+    datos['correlativoDeComanda'] = await generarCorrelativoDeComanda();
+
+    if (anulados.isNotEmpty) {
+      datos['productos'] = anulados;
+      datos['esAnulacion'] = true;
+    } else {
+      datos['productos'] = _items;
+      datos['esAnulacion'] = false;
+    }
+
+    await goTo(context, Comanda(datos));
+    setState(() {
+      _ultimaComandaEnviada = {...datos};
+    });
+    _refrescarPedido();
+
+  }
+
 
   void _otros() async {
     return showDialog(
@@ -596,7 +681,12 @@ class _PedidoState extends State<Pedido> {
               children: [
                 BottomButton(Icons.description, 'Boleta', _boleta),
                 BottomButton(Icons.description, 'Factura', _factura),
-                BottomButton(Icons.description, 'Precuenta', _precuenta),
+                BottomButton(Icons.receipt_long, 'Precuenta', _precuenta),
+                BottomButtonComanda(
+                  Icons.send,
+                  'Enviar',
+                  _botonEnviarActivo ? _comanda : null,
+                ),
                 BottomButton(Icons.assignment, 'Otros', _otros),
               ],
             ),
