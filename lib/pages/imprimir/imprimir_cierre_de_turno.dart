@@ -49,7 +49,8 @@ class _ImprimirCierreDeTurnoState extends State<ImprimirCierreDeTurno> {
   }
 
   //La plantilla de las fechas en estas pantallas
-  final String _dateTemplate = 'day/month/year - hour:minute';
+  final String _dateTemplate = 'dd/MM/yyyy - HH:mm';
+
 
   String _caja = '';
   String _local = '';
@@ -83,10 +84,11 @@ class _ImprimirCierreDeTurnoState extends State<ImprimirCierreDeTurno> {
         _local = user['local'] ?? 'LOCAL';
         Map turno = widget.datosDelTurno;
         _turnoID = turno['id'].toString();
-        _fechaInicio = int.parse(
-          '${turno['id']}',
-        ); //En este caso, el ID del turno son los millisecondsSinceEpoch
-        _fechaCierre = DateTime.now().millisecondsSinceEpoch;
+        _fechaInicio = DateTime.parse(turno['fechaApertura']).millisecondsSinceEpoch;
+        _fechaCierre = DateTime.parse(turno['fechaCierre'] ?? DateTime.now().toIso8601String()).millisecondsSinceEpoch;
+
+
+ 
         _tipoDeCambioCompra = turno['precioDeCompra'];
         _tipoDeCambioVenta = turno['precioDeVenta'];
 
@@ -331,23 +333,14 @@ class _ImprimirCierreDeTurnoState extends State<ImprimirCierreDeTurno> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         sep,
-                        Te(
-                          getDateString(
-                            DateTime.now().millisecondsSinceEpoch,
-                            _dateTemplate,
-                          ),
-                        ),
-                        Te('Local: $_local'),
-                        Te('Caja: $_caja'),
-                        Te('Turno: $_turnoID'),
-                        Te(
-                          'F. inicio: ' +
-                              getDateString(_fechaInicio, _dateTemplate),
-                        ),
-                        Te(
-                          'F. cierre: ' +
-                              getDateString(_fechaCierre, _dateTemplate),
-                        ),
+                        Te('Fecha de Impresión: ${getDateString(DateTime.now().millisecondsSinceEpoch, _dateTemplate)}'),
+                        Te('LOCAL: $_local', bold: true),
+                        Te('CAJA: $_caja', bold: true),
+                        Te('TURNO: $_turnoID', bold: true),
+                        sep,
+                        Te('FECHA DE INICIO: ${getDateString(_fechaInicio, _dateTemplate)}'),
+                        Te('FECHA DE CIERRE: ${getDateString(_fechaCierre, _dateTemplate)}'),
+
                         sep,
                         MyRowData('T.C. COM:', _tipoDeCambioCompra),
                         MyRowData('T.C. VENT:', _tipoDeCambioVenta),

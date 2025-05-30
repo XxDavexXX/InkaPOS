@@ -28,9 +28,16 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
 
   void _imprimir() async {
     if ((await confirm(context, '¿Imprimir?')) != true) return;
-    // Imprime el cierre de turno pero no cierra el turno
-    await goTo(context, ImprimirCierreDeTurno(getTurnoActual()!));
+
+    final turno = getTurnoActual();
+    if (turno == null) {
+      await alert(context, 'No hay turno activo para imprimir.');
+      return;
+    }
+
+    await goTo(context, ImprimirCierreDeTurno(turno));
   }
+
 
   void _cerrarTurno() async {
     if ((await confirm(context, '¿Cerrar turno?')) != true) return;
@@ -42,14 +49,15 @@ class _CierreDeTurnoState extends State<CierreDeTurno> {
     }
 
     loadThis(context, () async {
-      await cerrarTurnoActual();
-      final result = await goTo(context, ImprimirCierreDeTurno(datosDelTurno));
-      Navigator.pop(
-        context,
-        result,
-      ); // 👈 propaga el true si el turno ya no existe
+      await cerrarTurnoActual(); // esto elimina el turno activo
+
+      // usar la copia anterior que guardaste
+      await goTo(context, ImprimirCierreDeTurno(datosDelTurno));
+
+      Navigator.pop(context, true); // propaga true al cerrar
     });
   }
+
 
   void _cierreZ() async {
     if ((await confirm(context, '¿Cierre Z?')) != true) return;

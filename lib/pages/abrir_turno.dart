@@ -147,15 +147,6 @@ class _AbrirTurnoState extends State<AbrirTurno> {
     setState(()=>_fondoInicialDolares=price);
   }
 
-  // void _aceptar()=>back(context,data:{
-  //   'id': DateTime.now().millisecondsSinceEpoch,
-  //   'precioDeCompra': _precioDeCompra,
-  //   'precioDeVenta': _precioDeVenta,
-  //   'fondoInicialSoles': _fondoInicialSoles,
-  //   'fondoInicialDolares': _fondoInicialDolares,
-  //   'usuarioID': getUser()!['id'],
-  // });
-
   void _aceptar() {
     if (getCajaActual() == null) {
       alert(context, 'Debes seleccionar una caja activa');

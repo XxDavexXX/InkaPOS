@@ -42,7 +42,8 @@ class _ImprimirCierreDeTurnoZState extends State<ImprimirCierreDeTurnoZ> {
     return '${hour%12}:00 ${hour>=12?'p.m.':'a.m.'} - ${(hour+1)%12}:00 ${(hour+1)>=12?'p.m.':'a.m.'}';
   }
 
-  final String _dateTemplate = 'day/month/year - hour:minute';
+  final String _dateTemplate = 'dd/MM/yyyy - HH:mm';
+
   
   //Variables
   String _caja = '';
@@ -203,7 +204,7 @@ class _ImprimirCierreDeTurnoZState extends State<ImprimirCierreDeTurnoZ> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         sep,
-                        Te(getDateString(DateTime.now().millisecondsSinceEpoch,_dateTemplate)),
+                        Te('Fecha de Impresión: ${getDateString(DateTime.now().millisecondsSinceEpoch, _dateTemplate)}'),
                         Te('Caja: $_caja'),
                         const SimpleLine(height:3,color:Colors.black),
                         const Te('DETALLE DE CIERRE DE CAJA (Z)',bold:true),

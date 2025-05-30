@@ -60,13 +60,18 @@ Future setTurnoActual(Map newTurn) async =>
 
 Future<void> cerrarTurnoActual() async {
   final currentTurn = getTurnoActual();
-  if (currentTurn == null) return; // 👈 Protege si ya fue cerrado
+  if (currentTurn == null) return;
 
   currentTurn['id'] = currentTurn['id'].toString();
+
+  currentTurn['fechaApertura'] ??= DateTime.now().toIso8601String();
+
   currentTurn['fechaCierre'] = DateTime.now().toIso8601String();
+
   await addTurno(currentTurn);
   await setts.delete('turnoActual');
 }
+
 
 //Turnos
 // {id: String (millisecondsSinceEpoch), precioDeCompra: double, precioDeVenta: double, fondoInicialSoles: double, fondoInicialDolares: double, usuario: int (user ID)}
