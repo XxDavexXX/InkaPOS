@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'te_nums.dart';
 import 'te.dart';
+import 'te_producto.dart';
 
 class ProductsTable extends StatelessWidget {
   final List products;
@@ -12,28 +13,42 @@ class ProductsTable extends StatelessWidget {
         const SizedBox(height: 12),
         const Row(
           children: [
-            SizedBox(width: 55, child: Te('Cant', bold: true, size: 12)),
-            Expanded(child: Te('Producto', bold: true, size: 12)),
-            SizedBox(
-              width: 100,
-              child: Te('Precio unit.', bold: true, size: 12),
+            SizedBox(width: 40, child: Temuns('Cant', bold: true, size: 12)),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Teprod('Producto', bold: true, size: 12),
+              ),
             ),
-            SizedBox(width: 63, child: Te('Subtotal', bold: true, size: 12)),
+            SizedBox(
+              width: 80,
+              child: Temuns('Precio unit.', bold: true, size: 12),
+            ),
+            SizedBox(
+              width: 63,
+              child: Temuns('Subtotal', bold: true, size: 12),
+            ),
           ],
         ),
         ...products.map<Widget>(
           (prod) => Row(
             children: [
               SizedBox(
-                width: 55,
+                width: 40,
                 child: Temuns(
                   double.parse(prod['cantidad'].toString()).toStringAsFixed(2),
                   size: 12,
                 ),
               ),
-              Expanded(child: Te(prod['nombre'], size: 12)),
+              // Expanded(child: Teprod(prod['nombre'], size: 12)),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Teprod(prod['nombre'], size: 12),
+                ),
+              ),
               SizedBox(
-                width: 100,
+                width: 80,
                 child: Temuns(
                   double.parse(
                     prod['precioUnit'].toString(),

@@ -15,118 +15,114 @@ import 'comprobantes/factura.dart';
 class TotalAPagar extends StatefulWidget {
   final Map datos;
   final Map? vendedor;
-  const TotalAPagar({
-    required this.datos,
-    required this.vendedor,
-    super.key,
-  });
+  const TotalAPagar({required this.datos, required this.vendedor, super.key});
   @override
   State<TotalAPagar> createState() => _TotalAPagarState();
 }
 
 class _TotalAPagarState extends State<TotalAPagar> {
-
   late List<Map> _metodosDePago;
 
-  String _whatIsLeftText='Faltan';
-  double _whatIsLeftNumber=0.0;
-  
+  String _whatIsLeftText = 'Faltan';
+  double _whatIsLeftNumber = 0.0;
+
   String _input = '';
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _metodosDePago = getAllMetodosDePago().map((Map mp)=>{...mp, 'activo': false, 'monto':0.0}).toList();
+    _metodosDePago =
+        getAllMetodosDePago()
+            .map((Map mp) => {...mp, 'activo': false, 'monto': 0.0})
+            .toList();
     //Seleccionar al inicio la opción de visa en caso exista
-    _metodosDePago.forEach((Map mp){
-      if(mp['nombre'].toLowerCase().contains('visa')){
-        mp['activo']=true;
+    _metodosDePago.forEach((Map mp) {
+      if (mp['nombre'].toLowerCase().contains('visa')) {
+        mp['activo'] = true;
         //Cargar el monto exacto con el método de pago tarjeta
-        mp['monto']=_total();
+        mp['monto'] = _total();
       }
     });
   }
 
-
-  Map _getMetodoDePagoActivo()=>_metodosDePago.where((mp)=>mp['activo']).toList().first;
+  Map _getMetodoDePagoActivo() =>
+      _metodosDePago.where((mp) => mp['activo']).toList().first;
 
   void _seleccionarMetodoDePago(Map nuevo) => setState(() {
-    double montoAnterior = 0.0;
-
     for (var mp in _metodosDePago) {
-      if (mp['activo']) {
-        montoAnterior = mp['monto'];
-        mp['monto'] = 0.0;
-      }
-      mp['activo'] = false;
+      mp['activo'] = false; // Solo desactivamos todos
     }
 
     nuevo['activo'] = true;
-    nuevo['monto'] += montoAnterior;
+
+    // No sumamos ni modificamos el monto, dejamos el que tenía
 
     _input = nuevo['monto'].toString();
-    _updateWhatIsLeftToPay(); // Actualiza texto de vuelto o faltante
+    _updateWhatIsLeftToPay();
   });
 
-
-
   //El saldo en soles, si hay dolares, los convierte en soles
-  double _saldo(){
+  double _saldo() {
     double conversionDolaresSoles = getTurnoActual()!['precioDeVenta'];
     double saldo = 0.0;
-    _metodosDePago.forEach((Map mp){
-      if(mp['divisa']=='PEN'){
-        saldo+=mp['monto'];
+    _metodosDePago.forEach((Map mp) {
+      if (mp['divisa'] == 'PEN') {
+        saldo += mp['monto'];
       } else {
-        saldo+=mp['monto']*conversionDolaresSoles;
+        saldo += mp['monto'] * conversionDolaresSoles;
       }
     });
     return saldo;
   }
-  double _total(){
+
+  double _total() {
     double total = 0.0;
-    widget.datos['productos'].forEach((Map prod){
+    widget.datos['productos'].forEach((Map prod) {
       total = total + (prod['cantidad'] * prod['precioUnit']);
     });
     return total;
   }
 
-  void _updateWhatIsLeftToPay(){
-    double total=_total();
-    double saldo=_saldo();
-    if(total < saldo){
-      setState((){
+  void _updateWhatIsLeftToPay() {
+    double total = _total();
+    double saldo = _saldo();
+    if (total < saldo) {
+      setState(() {
         _whatIsLeftText = 'Vuelto';
-        _whatIsLeftNumber = saldo-total;
+        _whatIsLeftNumber = saldo - total;
       });
     } else {
-      setState((){
+      setState(() {
         _whatIsLeftText = 'Faltan';
-        _whatIsLeftNumber = total-saldo;
+        _whatIsLeftNumber = total - saldo;
       });
     }
   }
 
-  void _pressKey(String theKey)async{
-    switch(theKey){
+  void _pressKey(String theKey) async {
+    switch (theKey) {
       case 'Delete':
-        if(_input.isEmpty)return;
-        setState(()=>_input=_input.substring(0,_input.length-1));
+        if (_input.isEmpty) return;
+        setState(() => _input = _input.substring(0, _input.length - 1));
         break;
       case 'Ready':
         double price = 0.0;
-        try{price = double.parse(_input.trim());}
-        catch(e){alert(context,'Número no válido');return;}
-        setState((){
-          _getMetodoDePagoActivo()['monto']=price;
+        try {
+          price = double.parse(_input.trim());
+        } catch (e) {
+          alert(context, 'Número no válido');
+          return;
+        }
+        setState(() {
+          _getMetodoDePagoActivo()['monto'] = price;
           _updateWhatIsLeftToPay();
         });
         break;
       default:
-        if(_input == '0.0' || _input == '0.' || _input == '0'){
-          setState(()=>_input = theKey);
+        if (_input == '0.0' || _input == '0.' || _input == '0') {
+          setState(() => _input = theKey);
         } else {
-          setState(()=>_input += theKey);
+          setState(() => _input += theKey);
         }
     }
   }
@@ -143,23 +139,62 @@ class _TotalAPagarState extends State<TotalAPagar> {
       alert(context, 'Faltan: S/${(total - saldo).toStringAsFixed(2)}');
       return;
     }
-    if (_whatIsLeftNumber != 0 && _metodosDePago.where((mp) => mp['monto'] > 0).any((mp) => mp['tipo'] != 'efectivo')) {
-      alert(context, 'Solo puede haber vuelto si el método de pago es efectivo');
+    if (_whatIsLeftNumber != 0 &&
+        _metodosDePago
+            .where((mp) => mp['monto'] > 0)
+            .any((mp) => mp['tipo'] != 'efectivo')) {
+      alert(
+        context,
+        'Solo puede haber vuelto si el método de pago es efectivo',
+      );
       return;
+    }
+
+    Map? metodoTarjeta = _metodosDePago.firstWhere(
+      (mp) => mp['tipo'] == 'tarjeta' && mp['monto'] > 0,
+      orElse: () => {},
+    );
+
+    String tipoExacto = '';
+    if (metodoTarjeta.isNotEmpty && metodoTarjeta.containsKey('nombre')) {
+      String nombre = metodoTarjeta['nombre'].toString().toLowerCase();
+      if (nombre.contains('visa')) {
+        tipoExacto = 'VISA';
+      } else if (nombre.contains('mastercard')) {
+        tipoExacto = 'MASTERCARD';
+      }
     }
 
     Map datos = {
       ...widget.datos,
       'vuelto': _whatIsLeftNumber,
-      'metodosDePago': _metodosDePago.where((mp) => mp['monto'] > 0).map<Map>((Map mp) {
-        Map map = {...mp};
-        map.remove('activo');
-        return map;
-      }).toList(),
-      'turnoID': getTurnoActual()?['id'], 
-      'cajaID': getCajaActual()?['codigo'],   
-      'vendedorID': widget.vendedor?['id'], 
+      // 'metodosDePago':
+      //     _metodosDePago.where((mp) => mp['monto'] > 0).map<Map>((Map mp) {
+      //       Map map = {...mp};
+      //       map.remove('activo');
+      //       return map;
+      //     }).toList(),
+      'metodosDePago':
+          _metodosDePago.where((mp) => mp['monto'] > 0).map<Map>((Map mp) {
+            Map map = {...mp};
+            map.remove('activo');
+
+            if (map['tipo'] == 'tarjeta' && map.containsKey('nombre')) {
+              String nombre = map['nombre'].toString().toLowerCase();
+              if (nombre.contains('visa')) {
+                map['tipo'] = 'visa';
+              } else if (nombre.contains('mastercard')) {
+                map['tipo'] = 'mastercard';
+              }
+            }
+
+            return map;
+          }).toList(),
+      'turnoID': getTurnoActual()?['id'],
+      'cajaID': getCajaActual()?['codigo'],
+      'vendedorID': widget.vendedor?['id'],
     };
+    datos['tipo_exacto'] = '';
     datos['numeroDeComprobante'] = await generarNumeroDeComprobante(
       tipo: datos['tipo'], // 'boleta' o 'factura'
     );
@@ -167,12 +202,15 @@ class _TotalAPagarState extends State<TotalAPagar> {
     datos['nroDeSerie'] = getSerieActiva(datos['tipo']);
     datos['codigoDeCaja'] = getCajaActual()?['codigo']; // Opcional pero útil
 
-
-
     await loadThis(context, () async {
       await addRegistroDeVenta(datos);
       await deleteAllCartItem();
-      showSuccessSnackBar(context, 'Pedido guardado', 'En registros de ventas', seconds: 2);
+      showSuccessSnackBar(
+        context,
+        'Pedido guardado',
+        'En registros de ventas',
+        seconds: 2,
+      );
     });
 
     if (datos['tipo'] == 'boleta') goTo(context, Boleta(datos));
@@ -182,52 +220,62 @@ class _TotalAPagarState extends State<TotalAPagar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    	backgroundColor:Theme.of(context).colorScheme.surface,
-    	appBar: AppBar(
-        actions: [
-          MyIcon(Icons.arrow_back,()=>back(context)),sep,
-        ],
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        actions: [MyIcon(Icons.arrow_back, () => back(context)), sep],
       ),
-    	body: DefaultBackground(
-    		addPadding: true,
-    		child: Column(
-    			children: [
+      body: DefaultBackground(
+        addPadding: true,
+        child: Column(
+          children: [
             SimpleWhiteBox(
               children: [
                 DialogTitle('Total a pagar: ${_total()}'),
-                ..._metodosDePago.map((Map mp)=>InkWell(
-                  onTap: ()=>_seleccionarMetodoDePago(mp),
-                  child: RowData(
-                    abreviatura: mp['abreviatura'],
-                    field: mp['nombre'],
-                    value: mp['monto'],
-                    selected: mp['activo'],
+                ..._metodosDePago.map(
+                  (Map mp) => InkWell(
+                    onTap: () => _seleccionarMetodoDePago(mp),
+                    child: RowData(
+                      abreviatura: mp['abreviatura'],
+                      field: mp['nombre'],
+                      value: mp['monto'],
+                      selected: mp['activo'],
+                    ),
                   ),
-                )),
+                ),
                 SimpleLine(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    P('$_whatIsLeftText: ${_whatIsLeftNumber.toStringAsFixed(2)}',bold:true,color:Colors.black),
-                    P('Saldo: ${_saldo().toStringAsFixed(2)}',bold:true,color:Colors.black),
+                    P(
+                      '$_whatIsLeftText: ${_whatIsLeftNumber.toStringAsFixed(2)}',
+                      bold: true,
+                      color: Colors.black,
+                    ),
+                    P(
+                      'Saldo: ${_saldo().toStringAsFixed(2)}',
+                      bold: true,
+                      color: Colors.black,
+                    ),
                   ],
                 ),
                 sep,
                 Div(
                   borderRadius: 16,
                   background: Colors.grey,
-                  width: width(context)*0.66,
+                  width: width(context) * 0.66,
                   height: 55,
-                  child: Center(child: P(_input,color:Colors.white,size:19,bold:true)),
+                  child: Center(
+                    child: P(_input, color: Colors.white, size: 19, bold: true),
+                  ),
                 ),
                 sep,
-                MyKeyboard(_pressKey,_pagar),
+                MyKeyboard(_pressKey, _pagar),
                 sep,
               ],
             ),
           ],
-    		),
-    	),
+        ),
+      ),
     );
   }
 }
@@ -235,44 +283,44 @@ class _TotalAPagarState extends State<TotalAPagar> {
 class MyKeyboard extends StatelessWidget {
   final Function pk;
   final VoidCallback pagar;
-  const MyKeyboard(this.pk,this.pagar,{super.key});
+  const MyKeyboard(this.pk, this.pagar, {super.key});
   @override
-  Widget build(BuildContext context)=>Wrap(
+  Widget build(BuildContext context) => Wrap(
     alignment: WrapAlignment.spaceEvenly,
     spacing: 7,
     runSpacing: 7,
     children: [
-      SimpleKey('1',pk),
-      SimpleKey('2',pk),
-      SimpleKey('3',pk),
-      SimpleKey('4',pk),
-      SimpleKey('5',pk),
-      SimpleKey('6',pk),
-      SimpleKey('7',pk),
-      SimpleKey('8',pk),
-      SimpleKey('9',pk),
+      SimpleKey('1', pk),
+      SimpleKey('2', pk),
+      SimpleKey('3', pk),
+      SimpleKey('4', pk),
+      SimpleKey('5', pk),
+      SimpleKey('6', pk),
+      SimpleKey('7', pk),
+      SimpleKey('8', pk),
+      SimpleKey('9', pk),
       ComplexKey(
-        const Icon(Icons.backspace,color:Colors.white,size:32),
+        const Icon(Icons.backspace, color: Colors.white, size: 32),
         Colors.red,
         'Delete',
         pk,
       ),
-      SimpleKey('0',pk),
+      SimpleKey('0', pk),
       ComplexKey(
-        const Icon(Icons.check,color:Colors.white,size:32),
+        const Icon(Icons.check, color: Colors.white, size: 32),
         Colors.green,
         'Ready',
         pk,
       ),
-      SimpleKey('.',pk),
+      SimpleKey('.', pk),
       InkWell(
         onTap: pagar,
         child: Div(
-          width: width(context)*0.50,
+          width: width(context) * 0.50,
           height: 42,
           borderRadius: 16,
           background: prim(context),
-          child: Center(child: P('Pagar',bold:true)),
+          child: Center(child: P('Pagar', bold: true)),
         ),
       ),
     ],
@@ -282,18 +330,16 @@ class MyKeyboard extends StatelessWidget {
 class SimpleKey extends StatelessWidget {
   final String text;
   final Function pressKey;
-  const SimpleKey(this.text,this.pressKey,{super.key});
+  const SimpleKey(this.text, this.pressKey, {super.key});
   @override
-  Widget build(BuildContext context)=>InkWell(
-    onTap: ()=>pressKey(text),
+  Widget build(BuildContext context) => InkWell(
+    onTap: () => pressKey(text),
     child: Div(
-      width: width(context)*0.21,
+      width: width(context) * 0.21,
       height: 42,
       borderRadius: 16,
       background: Colors.grey,
-      child: Center(
-        child: P(text,size:19,bold:true)
-      ),
+      child: Center(child: P(text, size: 19, bold: true)),
     ),
   );
 }
@@ -303,18 +349,16 @@ class ComplexKey extends StatelessWidget {
   final Color color;
   final String theKey;
   final Function pk;
-  const ComplexKey(this.content,this.color,this.theKey,this.pk,{super.key});
+  const ComplexKey(this.content, this.color, this.theKey, this.pk, {super.key});
   @override
-  Widget build(BuildContext context)=>InkWell(
-    onTap: ()=>pk(theKey),
+  Widget build(BuildContext context) => InkWell(
+    onTap: () => pk(theKey),
     child: Div(
-      width: width(context)*0.21,
+      width: width(context) * 0.21,
       height: 42,
       borderRadius: 16,
       background: color,
-      child: Center(
-        child: content,
-      ),
+      child: Center(child: content),
     ),
   );
 }
@@ -332,8 +376,8 @@ class RowData extends StatelessWidget {
     super.key,
   });
   @override
-  Widget build(BuildContext context)=>Padding(
-    padding: const EdgeInsets.only(bottom:4),
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 4),
     child: Row(
       children: [
         Expanded(
@@ -342,18 +386,18 @@ class RowData extends StatelessWidget {
               Div(
                 width: 32,
                 height: 32,
-                background: selected?Colors.green:Colors.grey,
+                background: selected ? Colors.green : Colors.grey,
                 circular: true,
-                child: Center(child:P(abreviatura,bold:true)),
+                child: Center(child: P(abreviatura, bold: true)),
               ),
               sep,
-              P(field,bold:true,color:Colors.black),
+              P(field, bold: true, color: Colors.black),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(7),
-          child: P(value.toStringAsFixed(2),bold:true,color:Colors.black)
+          child: P(value.toStringAsFixed(2), bold: true, color: Colors.black),
         ),
       ],
     ),

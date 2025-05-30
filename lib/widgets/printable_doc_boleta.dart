@@ -58,7 +58,7 @@ class PrintableDocBoleta extends StatelessWidget {
     return Div(
       width: 320,
       background: const Color.fromARGB(255, 255, 255, 255),
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+      padding: const EdgeInsets.only(top: 5, bottom: 60, left: 16, right: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -118,7 +118,7 @@ class PrintableDocBoleta extends StatelessWidget {
             'Cliente: ',
             reg['cliente']?['nombre']?.toString().trim().isNotEmpty == true
                 ? reg['cliente']['nombre']
-                : 'Consumidor final',
+                : '',
           ),
           // Documento de identidad (DNI, RUC, etc.)
           MyRowData(
@@ -130,6 +130,7 @@ class PrintableDocBoleta extends StatelessWidget {
           ),
           SimpleLine(height: 3, color: Colors.black),
           ProductsTable(reg['productos']),
+          SimpleLine(height: 3, color: Colors.black),
           Align(
             alignment: Alignment.centerRight,
             child: Te('SubTotal: ' + _getTotal(), bold: true),
@@ -178,11 +179,18 @@ class PrintableDocBoleta extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Te(Logic.turnPriceToWords(double.parse(_getTotal()))),
-                ...reg['metodosDePago'].map<Widget>(
-                  (mp) => Te(
-                    '${mp['tipo'].toUpperCase()}: ${mp['divisa'] == 'PEN' ? 'S/' : '\$'}${mp['monto'].toStringAsFixed(2)}',
+                if (reg['tipo_exacto'] != null &&
+                    reg['tipo_exacto'].toString().trim().isNotEmpty) ...[
+                  Te(
+                    '${reg['tipo_exacto']} ${reg['metodosDePago'][0]['divisa'] == 'PEN' ? 'S/' : '\$'}${reg['metodosDePago'][0]['monto'].toStringAsFixed(2)}',
                   ),
-                ),
+                ] else ...[
+                  ...reg['metodosDePago'].map<Widget>(
+                    (mp) => Te(
+                      '${mp['tipo'].toUpperCase()} ${mp['divisa'] == 'PEN' ? 'S/' : '\$'}${mp['monto'].toStringAsFixed(2)}',
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
